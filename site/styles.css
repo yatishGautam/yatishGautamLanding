@@ -474,7 +474,74 @@ a { color: inherit; text-decoration: none; }
 .tl-role { font-family: var(--font-body); font-size: 15px; font-weight: 500; color: var(--ink-faint); }
 .tl-item p:last-child { color: var(--ink-dim); font-size: 15.5px; }
 
-/* ---------- stack ---------- */
+/* ---------- metro tiles (a little Windows Phone tribute) ---------- */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+  grid-auto-rows: 108px;
+  grid-auto-flow: dense;
+  gap: 10px;
+  max-width: 720px;
+  perspective: 1200px;
+}
+.tile { position: relative; }
+.tile--2x2 { grid-column: span 2; grid-row: span 2; }
+.tile--2x1 { grid-column: span 2; }
+.tile__inner {
+  position: absolute; inset: 0;
+  transform-style: preserve-3d;
+  transition: transform 0.65s cubic-bezier(0.4, 0.2, 0.2, 1);
+}
+.tile.flipped .tile__inner { transform: rotateX(180deg); }
+.tile__face {
+  position: absolute; inset: 0;
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  display: flex; flex-direction: column; justify-content: space-between;
+  padding: 10px 12px;
+  color: #fff;
+  font-family: "Segoe UI", var(--font-body);
+  overflow: hidden;
+}
+.tile__back { transform: rotateX(180deg); justify-content: center; }
+.tile__back p { font-size: 13px; line-height: 1.45; font-weight: 400; opacity: 0.95; }
+.tile__emoji { font-size: 26px; line-height: 1; }
+.tile--2x2 .tile__emoji { font-size: 44px; }
+.tile__label {
+  font-size: 13px; font-weight: 400; letter-spacing: 0.01em;
+  text-transform: lowercase; align-self: flex-start;
+}
+.tile--2x2 .tile__label { font-size: 15px; }
+/* flat metro colors */
+.tile--lime .tile__face { background: #8ac400; color: #10130a; }
+.tile--blue .tile__face { background: #1272d6; }
+.tile--teal .tile__face { background: #00947e; }
+.tile--purple .tile__face { background: #6a3fc4; }
+.tile--magenta .tile__face { background: #c42472; }
+/* WP press-tilt + hover */
+.tile { transition: transform 0.18s ease; }
+/* fly-in entrance, staggered by --tile-i (animation, so hover keeps zero delay) */
+.tiles .tile { opacity: 0; }
+.tiles.visible .tile {
+  opacity: 1;
+  animation: tileIn 0.55s var(--ease-out) backwards;
+  animation-delay: calc(var(--tile-i, 0) * 0.06s);
+}
+@keyframes tileIn {
+  from { opacity: 0; transform: perspective(900px) rotateY(55deg) translateX(60px); }
+  to { opacity: 1; transform: none; }
+}
+.section--metro .section__title {
+  font-family: "Segoe UI", var(--font-body);
+  font-weight: 300; text-transform: lowercase; letter-spacing: 0;
+}
+@media (max-width: 560px) {
+  .tiles { grid-template-columns: repeat(4, 1fr); grid-auto-rows: minmax(74px, 1fr); gap: 8px; }
+  .tile__emoji { font-size: 20px; }
+  .tile--2x2 .tile__emoji { font-size: 34px; }
+  .tile__label, .tile__back p { font-size: 11px; }
+}
+
+/* ---------- stack (legacy) ---------- */
 .stack { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 22px; }
 .stack__col {
   background: var(--bg-card); border: 1px solid var(--line); border-radius: 18px;

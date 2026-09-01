@@ -429,7 +429,40 @@
   window.addEventListener("scroll", scheduleSweep, { passive: true });
   window.addEventListener("resize", scheduleSweep);
   setTimeout(sweep, 600);
-  setTimeout(sweep, 1800);
+  setInterval(sweep, 900);
+
+  /* ---- metro live tiles ---- */
+  var tilesWrap = document.getElementById("tiles");
+  if (tilesWrap) {
+    var tiles = Array.prototype.slice.call(tilesWrap.querySelectorAll(".tile"));
+    tiles.forEach(function (t, i) { t.style.setProperty("--tile-i", i); });
+
+    /* live-tile flips: a random tile flips over, flips back later */
+    if (!reduceMotion) {
+      setInterval(function () {
+        if (!tilesWrap.classList.contains("visible")) return;
+        var t = tiles[Math.floor(Math.random() * tiles.length)];
+        t.classList.add("flipped");
+        setTimeout(function () { t.classList.remove("flipped"); }, 2600);
+      }, 1900);
+    }
+
+    /* WP press-tilt: tilt toward the corner you press/hover */
+    tiles.forEach(function (t) {
+      function tilt(e) {
+        if (reduceMotion) return;
+        var r = t.getBoundingClientRect();
+        var x = (e.clientX - r.left) / r.width - 0.5;
+        var y = (e.clientY - r.top) / r.height - 0.5;
+        t.style.transform = "perspective(700px) rotateY(" + x * 14 + "deg) rotateX(" + y * -14 + "deg) scale(0.985)";
+      }
+      t.addEventListener("mousemove", tilt);
+      t.addEventListener("mouseleave", function () { t.style.transform = ""; });
+      t.addEventListener("click", function () {
+        t.classList.toggle("flipped");
+      });
+    });
+  }
 
   /* ---- tiny console easter egg ---- */
   if (window.console && console.log) {
