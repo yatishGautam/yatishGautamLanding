@@ -12,7 +12,7 @@
 
   /* ---- rotating word in hero ---- */
   var swapEl = document.getElementById("swap");
-  var swaps = ["fun.", "my dad.", "the App Store.", "fun."];
+  var swaps = ["fun.", "ADHD brains.", "real stores.", "the App Store.", "fun."];
   if (swapEl && !reduceMotion) {
     var si = 0;
     setInterval(function () {
