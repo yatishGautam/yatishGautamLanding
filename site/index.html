@@ -14,7 +14,7 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600&family=Instrument+Serif:ital@1&family=Fragment+Mono&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600&family=Instrument+Serif:ital@1&family=Fragment+Mono&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <noscript><style>.reveal-up{opacity:1!important;transform:none!important}.reveal-up .chips li{opacity:1!important;transform:none!important}</style></noscript>
 </head>
@@ -56,9 +56,10 @@
           <span class="avatar__wave" aria-hidden="true">👋</span>
         </button>
         <p class="hero__eyebrow">Toronto, Canada · Software Engineer</p>
+        <span class="scribble scribble--me" aria-hidden="true">yes, actual human</span>
       </div>
       <h1 class="hero__title">
-        <span class="line"><span class="word">I</span> <span class="word">build</span> <span class="word">the</span> <span class="word accent serif-accent">desktop</span></span>
+        <span class="line"><span class="word">I</span> <span class="word">build</span> <span class="word">the</span> <span class="word accent serif-accent u-squiggle">desktop<svg class="doodle doodle--underline" viewBox="0 0 120 12" aria-hidden="true"><path d="M3,8 C22,3 38,11 58,6 C78,1 96,10 117,5" pathLength="1"/></svg></span></span>
         <span class="line"><span class="word">Citi's</span> <span class="word">traders</span> <span class="word">run</span> <span class="word">on.</span></span>
         <span class="line line--sub"><span class="word">For</span> <span class="word">fun:</span> <span class="word swap-wrap"><span class="swap" id="swap">everything else.</span></span></span>
       </h1>
@@ -99,6 +100,7 @@
     <div class="stat reveal-up">
       <span class="stat__num" data-count="150">0</span><span class="stat__plus">%</span>
       <span class="stat__label">mobile user growth as a solo mobile eng</span>
+      <span class="scribble stat__note" aria-hidden="true">still proud of this one</span>
     </div>
     <div class="stat reveal-up">
       <span class="stat__num" data-count="99.99">0</span><span class="stat__plus">%</span>
@@ -126,6 +128,8 @@
         </ul>
       </div>
       <div class="feature__demo">
+        <span class="tape tape--tl" aria-hidden="true"></span>
+        <span class="tape tape--br" aria-hidden="true"></span>
         <div class="terminal tilt">
           <div class="terminal__bar"><i></i><i></i><i></i><span>umshai — ingest</span></div>
           <div class="terminal__body" id="terminal">
@@ -139,6 +143,7 @@
             </div>
           </div>
         </div>
+        <span class="scribble feature__caption" aria-hidden="true">the actual pipeline, condensed</span>
       </div>
     </article>
 
@@ -146,21 +151,23 @@
     <p class="cards__intro reveal-up">Not demos — shipped products with real users, each one <strong>web + cloud + mobile + desktop</strong>.</p>
     <div class="cards">
       <article class="card tilt reveal-up">
-        <div class="card__top"><span class="card__emoji">🔥</span><span class="tag tag--ghost">Live · iPhone + Mac + Web</span></div>
+        <span class="scribble card__note" aria-hidden="true">real users!</span>
+        <div class="card__top"><span class="card__no">01</span><span class="tag tag--ghost">Live · iPhone + Mac + Web</span></div>
         <h3><a href="https://getember.space" target="_blank" rel="noopener">Ember — getember.space ↗</a></h3>
         <p>A planner for ADHD brains — "It's 11 a.m. and you've done none of it. Good. Start from here." Local-first, offline, one domain model across desktop, web, and iOS.</p>
         <ul class="chips"><li>Electron</li><li>SwiftUI</li><li>Node + Postgres</li><li>Local-first sync</li><li>AI coach</li></ul>
       </article>
 
       <article class="card tilt reveal-up">
-        <div class="card__top"><span class="card__emoji">🧠</span><span class="tag tag--ghost">From first principles</span></div>
+        <span class="scribble card__note" aria-hidden="true">the fun one</span>
+        <div class="card__top"><span class="card__no">02</span><span class="tag tag--ghost">From first principles</span></div>
         <h3>Transformers, by hand</h3>
         <p>Attention, KV caches, embeddings — built from scratch in PyTorch on Apple Silicon. The API is the easy part.</p>
         <ul class="chips"><li>PyTorch</li><li>MPS</li><li>nn.Module</li></ul>
       </article>
 
       <article class="card tilt reveal-up">
-        <div class="card__top"><span class="card__emoji">🫀</span><span class="tag tag--ghost">Full-stack</span></div>
+        <div class="card__top"><span class="card__no">03</span><span class="tag tag--ghost">Full-stack</span></div>
         <h3>HeartSync</h3>
         <p>Cross-cloud notifications — AWS SNS meets GCP Pub/Sub at 99.9% delivery, deployed on Cloud Run.</p>
         <ul class="chips"><li>Node.js</li><li>React</li><li>AWS + GCP</li></ul>
@@ -277,11 +284,11 @@
     </div>
 
     <aside class="now reveal-up">
-      <p class="now__pulse"><span class="pulse-dot"></span> Currently</p>
+      <span class="now__pin" aria-hidden="true"></span>
+      <p class="now__pulse">currently obsessing over</p>
       <p>
-        Deep in <strong>Gradient Ascent</strong> — building transformers by hand
-        in PyTorch. RoPE, KV caches, attention: I like knowing what's under the
-        API.
+        <strong>Gradient Ascent</strong> — building transformers by hand in
+        PyTorch. RoPE, KV caches, attention: I like knowing what's under the API.
       </p>
     </aside>
   </section>
@@ -290,7 +297,7 @@
   <section class="contact" id="contact">
     <div class="contact__inner reveal-up">
       <p class="tag">Next chapter</p>
-      <h2 class="mask-words">Let's build something<br><span class="accent serif-accent">worth shipping.</span></h2>
+      <h2 class="mask-words">Let's build something<br><span class="accent serif-accent u-circle">worth shipping.<svg class="doodle doodle--circle" viewBox="0 0 260 70" aria-hidden="true"><path d="M18,38 C14,12 120,4 196,10 C252,15 254,44 208,56 C150,70 40,66 22,50 C10,39 40,20 78,16" pathLength="1"/></svg></span></h2>
       <p class="contact__sub">Toronto · open to interesting problems in AI, fintech, and everything cross-platform.</p>
       <div class="contact__actions">
         <a class="btn btn--primary btn--big magnetic" href="https://www.linkedin.com/in/yatishgautam28/" target="_blank" rel="noopener">Connect on LinkedIn <span class="btn__arrow">→</span></a>
@@ -301,7 +308,7 @@
 
   <footer class="footer">
     <p>© 2026 Yatish Gautam · Toronto · artisanal small-batch HTML</p>
-    <p class="footer__wink">No frameworks were harmed in the making of this site.</p>
+    <p class="footer__wink">hand-rolled at 2am · no frameworks were harmed</p>
   </footer>
 
   <script src="main.js"></script>
