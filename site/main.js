@@ -49,6 +49,76 @@
     })();
   }
 
+  /* ---- scroll progress bar ---- */
+  var progressBar = document.getElementById("scroll-progress");
+  if (progressBar) {
+    var onScrollProgress = function () {
+      var max = document.documentElement.scrollHeight - innerHeight;
+      progressBar.style.width = (max > 0 ? (scrollY / max) * 100 : 0) + "%";
+    };
+    window.addEventListener("scroll", onScrollProgress, { passive: true });
+    onScrollProgress();
+  }
+
+  /* ---- hero orb parallax ---- */
+  if (!reduceMotion) {
+    var orbs = document.querySelectorAll(".orb");
+    window.addEventListener("scroll", function () {
+      var y = scrollY;
+      if (y < innerHeight * 1.5) {
+        orbs.forEach(function (o, i) {
+          o.style.marginTop = y * (i ? -0.12 : 0.18) + "px";
+        });
+      }
+    }, { passive: true });
+  }
+
+  /* ---- chip stagger indices ---- */
+  document.querySelectorAll(".chips").forEach(function (list) {
+    Array.prototype.forEach.call(list.children, function (li, i) {
+      li.style.setProperty("--chip-i", i);
+    });
+  });
+
+  /* ---- card reveal stagger (per grid) ---- */
+  document.querySelectorAll(".cards, .stack, .stats").forEach(function (grid) {
+    Array.prototype.forEach.call(grid.children, function (el, i) {
+      if (el.classList.contains("reveal-up")) {
+        el.style.transitionDelay = (i % 4) * 0.1 + "s";
+      }
+    });
+  });
+
+  /* ---- section title scramble-decode ---- */
+  var GLYPHS = "!<>-_\\/[]{}—=+*^?#";
+  document.querySelectorAll(".section__title").forEach(function (title) {
+    var textNode = null;
+    title.childNodes.forEach(function (n) {
+      if (n.nodeType === 3 && n.textContent.trim()) textNode = n;
+    });
+    if (!textNode || reduceMotion) return;
+    var finalText = textNode.textContent;
+    var obs = new IntersectionObserver(function (entries) {
+      if (!entries[0].isIntersecting) return;
+      obs.disconnect();
+      var frame = 0;
+      var total = 26;
+      (function tick() {
+        frame++;
+        var settled = Math.floor((frame / total) * finalText.length);
+        var out = "";
+        for (var i = 0; i < finalText.length; i++) {
+          if (i < settled || finalText[i] === " ") out += finalText[i];
+          else out += GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+        }
+        textNode.textContent = out;
+        if (frame < total) requestAnimationFrame(tick);
+        else textNode.textContent = finalText;
+      })();
+    }, { threshold: 0.6 });
+    obs.observe(title);
+  });
+
   /* ---- reveal on scroll ---- */
   var revealer = new IntersectionObserver(function (entries) {
     entries.forEach(function (en) {
