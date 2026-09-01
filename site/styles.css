@@ -257,6 +257,11 @@ a { color: inherit; text-decoration: none; }
   margin-bottom: 40px;
 }
 .hero__actions { display: flex; gap: 14px; flex-wrap: wrap; }
+.hero__status {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--font-mono); font-size: 13.5px; color: var(--ink-dim);
+  margin-top: 26px;
+}
 
 .hero__scroll {
   position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
@@ -322,6 +327,7 @@ a { color: inherit; text-decoration: none; }
   font-weight: 700; color: var(--accent); letter-spacing: -0.02em;
 }
 .stat__label { display: block; margin-top: 6px; color: var(--ink-dim); font-size: 14.5px; }
+.stat__wink { font-style: italic; color: var(--ink-faint); }
 
 /* ---------- sections ---------- */
 .section {
@@ -414,6 +420,7 @@ a { color: inherit; text-decoration: none; }
 .t-step.show { opacity: 1; transform: none; }
 .t-step em { color: var(--ink-dim); font-style: normal; }
 .t-ok { color: var(--accent); }
+.t-dim { color: var(--ink-faint); font-style: italic; }
 
 /* ---------- cards ---------- */
 .cards__intro {
@@ -515,7 +522,8 @@ a { color: inherit; text-decoration: none; }
     var(--bg);
 }
 .contact h2 { font-size: clamp(38px, 6vw, 72px); letter-spacing: -0.03em; margin-bottom: 24px; }
-.contact__sub { color: var(--ink-dim); margin-bottom: 44px; font-size: 17px; }
+.contact__sub { color: var(--ink-dim); margin-bottom: 44px; font-size: 17px; line-height: 1.9; }
+.contact__wink { font-family: var(--font-serif); font-style: italic; font-size: 18px; color: var(--ink); }
 .contact__actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
 
 .gradient-swipe {
