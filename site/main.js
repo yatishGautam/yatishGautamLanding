@@ -240,6 +240,48 @@
     onScrollTl();
   }
 
+  /* ---- confetti bursts ---- */
+  function confetti(x, y) {
+    if (reduceMotion) return;
+    var colors = ["#c6f542", "#7ef5c0", "#4296f5", "#ffffff", "#febc2e"];
+    for (var i = 0; i < 26; i++) {
+      var bit = document.createElement("span");
+      bit.className = "confetti-bit";
+      bit.style.background = colors[i % colors.length];
+      bit.style.left = x + "px";
+      bit.style.top = y + "px";
+      document.body.appendChild(bit);
+      var angle = Math.random() * Math.PI * 2;
+      var speed = 5 + Math.random() * 9;
+      var vx = Math.cos(angle) * speed, vy = Math.sin(angle) * speed - 6;
+      var rot = Math.random() * 720 - 360;
+      bit.animate([
+        { transform: "translate(0,0) rotate(0)", opacity: 1 },
+        { transform: "translate(" + vx * 22 + "px," + (vy * 22 + 240) + "px) rotate(" + rot + "deg)", opacity: 0 }
+      ], { duration: 900 + Math.random() * 700, easing: "cubic-bezier(0.16,1,0.3,1)" }).onfinish = function () {
+        this.effect.target.remove();
+      };
+    }
+  }
+  document.querySelectorAll(".nav__cta, .contact__actions .btn, .nav__logo").forEach(function (el) {
+    el.addEventListener("click", function (e) { confetti(e.clientX, e.clientY); });
+  });
+
+  /* ---- avatar: click spin + confetti ---- */
+  var portrait = document.getElementById("portrait");
+  if (portrait) {
+    var avatarImg = portrait.querySelector("img");
+    portrait.addEventListener("click", function (e) {
+      confetti(e.clientX, e.clientY);
+      if (!reduceMotion) {
+        avatarImg.animate(
+          [{ transform: "rotate(0) scale(1)" }, { transform: "rotate(360deg) scale(1.12)" }, { transform: "rotate(360deg) scale(1)" }],
+          { duration: 800, easing: "cubic-bezier(0.16,1,0.3,1)" }
+        );
+      }
+    });
+  }
+
   /* ---- tiny console easter egg ---- */
   if (window.console && console.log) {
     console.log(
