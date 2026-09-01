@@ -91,30 +91,35 @@
 
   /* ---- section title scramble-decode ---- */
   var GLYPHS = "!<>-_\\/[]{}—=+*^?#";
-  document.querySelectorAll(".section__title").forEach(function (title) {
+  function startScramble(title) {
+    if (title.dataset.scrambled) return;
+    title.dataset.scrambled = "1";
     var textNode = null;
     title.childNodes.forEach(function (n) {
       if (n.nodeType === 3 && n.textContent.trim()) textNode = n;
     });
     if (!textNode || reduceMotion) return;
     var finalText = textNode.textContent;
+    var frame = 0;
+    var total = 26;
+    (function tick() {
+      frame++;
+      var settled = Math.floor((frame / total) * finalText.length);
+      var out = "";
+      for (var i = 0; i < finalText.length; i++) {
+        if (i < settled || finalText[i] === " ") out += finalText[i];
+        else out += GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+      }
+      textNode.textContent = out;
+      if (frame < total) requestAnimationFrame(tick);
+      else textNode.textContent = finalText;
+    })();
+  }
+  document.querySelectorAll(".section__title").forEach(function (title) {
     var obs = new IntersectionObserver(function (entries) {
       if (!entries[0].isIntersecting) return;
       obs.disconnect();
-      var frame = 0;
-      var total = 26;
-      (function tick() {
-        frame++;
-        var settled = Math.floor((frame / total) * finalText.length);
-        var out = "";
-        for (var i = 0; i < finalText.length; i++) {
-          if (i < settled || finalText[i] === " ") out += finalText[i];
-          else out += GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
-        }
-        textNode.textContent = out;
-        if (frame < total) requestAnimationFrame(tick);
-        else textNode.textContent = finalText;
-      })();
+      startScramble(title);
     }, { threshold: 0.6 });
     obs.observe(title);
   });
@@ -228,8 +233,8 @@
 
   /* ---- animated counters ---- */
   var counted = false;
-  var statsObs = new IntersectionObserver(function (entries) {
-    if (!entries[0].isIntersecting || counted) return;
+  function runCounters() {
+    if (counted) return;
     counted = true;
     document.querySelectorAll(".stat__num").forEach(function (el) {
       var target = parseFloat(el.getAttribute("data-count"));
@@ -245,9 +250,15 @@
       }
       requestAnimationFrame(step);
     });
+  }
+  var statsObs = new IntersectionObserver(function (entries) {
+    if (entries[0].isIntersecting) runCounters();
   }, { threshold: 0.4 });
   var statsEl = document.querySelector(".stats");
   if (statsEl) statsObs.observe(statsEl);
+
+  /* ---- view hooks the sweep fallback can trigger ---- */
+  var viewHooks = [];
 
   /* ---- terminal typing demo ---- */
   var typeTarget = document.getElementById("type-target");
@@ -259,12 +270,19 @@
       'largest liquidity moves, last 30 days'
     ];
     var qi = 0;
+    var termStarted = false;
+    var startTerminal = function () {
+      if (termStarted) return;
+      termStarted = true;
+      runQuery();
+    };
     var termObs = new IntersectionObserver(function (entries) {
       if (!entries[0].isIntersecting) return;
       termObs.disconnect();
-      runQuery();
+      startTerminal();
     }, { threshold: 0.5 });
     termObs.observe(document.getElementById("terminal"));
+    viewHooks.push({ el: document.getElementById("terminal"), fn: startTerminal });
 
     function runQuery() {
       var q = queries[qi % queries.length];
@@ -377,6 +395,41 @@
       }
     });
   }
+
+  /* ---- sweep fallback: catch anything the observers missed ----
+     Fast momentum scrolls (especially on touch devices) can skip an
+     IntersectionObserver transition; this re-checks on every scroll. */
+  function inView(el) {
+    var r = el.getBoundingClientRect();
+    return r.top < innerHeight * 0.92 && r.bottom > 20;
+  }
+  var sweepScheduled = false;
+  function sweep() {
+    sweepScheduled = false;
+    document.querySelectorAll(".reveal-up:not(.visible)").forEach(function (el) {
+      if (inView(el)) el.classList.add("visible");
+    });
+    document.querySelectorAll(".mask-words:not(.visible)").forEach(function (el) {
+      if (inView(el)) el.classList.add("visible");
+    });
+    document.querySelectorAll(".section__title").forEach(function (el) {
+      if (!el.dataset.scrambled && inView(el)) startScramble(el);
+    });
+    if (statsEl && !counted && inView(statsEl)) runCounters();
+    viewHooks.forEach(function (h) {
+      if (inView(h.el)) h.fn();
+    });
+  }
+  function scheduleSweep() {
+    if (!sweepScheduled) {
+      sweepScheduled = true;
+      requestAnimationFrame(sweep);
+    }
+  }
+  window.addEventListener("scroll", scheduleSweep, { passive: true });
+  window.addEventListener("resize", scheduleSweep);
+  setTimeout(sweep, 600);
+  setTimeout(sweep, 1800);
 
   /* ---- tiny console easter egg ---- */
   if (window.console && console.log) {
