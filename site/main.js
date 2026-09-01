@@ -265,9 +265,9 @@
   var stepsWrap = document.getElementById("t-steps");
   if (typeTarget && stepsWrap) {
     var queries = [
-      'show payments to Acme over $50k last quarter',
-      'wires to Singapore flagged this week?',
-      'largest liquidity moves, last 30 days'
+      'ingest invoices/IMG_2041.jpg',
+      'ingest exports/pos_august.xlsx',
+      'ingest invoices/acme_foods.pdf'
     ];
     var qi = 0;
     var termStarted = false;

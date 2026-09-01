@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Yatish Gautam — Engineer</title>
-  <meta name="description" content="Toronto-based software engineer. I ship production LLM agents inside a global bank — and build web, cloud, mobile, and desktop products for fun.">
+  <meta name="description" content="Toronto-based software engineer. I build the desktop platform Citi's traders run on — and web, cloud, mobile, and desktop products for fun.">
   <link rel="canonical" href="https://www.yatishgautam.com/">
   <meta property="og:title" content="Yatish Gautam — Engineer">
-  <meta property="og:description" content="Production AI agents at a global bank. Web, cloud, mobile, and desktop products for fun.">
+  <meta property="og:description" content="The desktop platform Citi's traders run on by day. Web, cloud, mobile, and desktop products for fun.">
   <meta property="og:url" content="https://www.yatishgautam.com/">
   <meta property="og:type" content="website">
   <meta property="og:image" content="https://www.yatishgautam.com/portrait.jpg">
@@ -58,14 +58,14 @@
         <p class="hero__eyebrow">Toronto, Canada · Software Engineer</p>
       </div>
       <h1 class="hero__title">
-        <span class="line"><span class="word">I</span> <span class="word">ship</span> <span class="word accent serif-accent">AI&nbsp;agents</span></span>
-        <span class="line"><span class="word">inside</span> <span class="word">a</span> <span class="word">global</span> <span class="word">bank.</span></span>
+        <span class="line"><span class="word">I</span> <span class="word">build</span> <span class="word">the</span> <span class="word accent serif-accent">desktop</span></span>
+        <span class="line"><span class="word">Citi's</span> <span class="word">traders</span> <span class="word">run</span> <span class="word">on.</span></span>
         <span class="line line--sub"><span class="word">For</span> <span class="word">fun:</span> <span class="word swap-wrap"><span class="swap" id="swap">everything else.</span></span></span>
       </h1>
       <p class="hero__sub reveal-up">
-        Yatish Gautam — VP at Citi, building the desktop platform traders run on
-        and production LLM systems over live financial data. After hours: an ADHD
-        planner on the App Store and a retail platform real supermarkets run on.
+        Yatish Gautam — VP at Citi, on CitiDirect and Citi Desktop, the platform
+        the trading floor runs on. After hours: an ADHD planner on the App Store
+        and a retail platform real supermarkets run on.
       </p>
       <div class="hero__actions reveal-up">
         <a class="btn btn--primary magnetic" href="#work">See the work <span class="btn__arrow">→</span></a>
@@ -94,8 +94,8 @@
       <span class="stat__label">years shipping software</span>
     </div>
     <div class="stat reveal-up">
-      <span class="stat__num" data-count="1">0</span>
-      <span class="stat__label">production LLM agent at a top-10 bank — named R2D2, obviously</span>
+      <span class="stat__num" data-count="4">0</span>
+      <span class="stat__label">platforms per side project: web, cloud, mobile, desktop</span>
     </div>
     <div class="stat reveal-up">
       <span class="stat__num" data-count="150">0</span><span class="stat__plus">%</span>
@@ -111,38 +111,39 @@
   <section class="section" id="work">
     <h2 class="section__title reveal-up"><span class="section__index">01</span> Selected work</h2>
 
-    <!-- R2D2 feature -->
+    <!-- Umshai feature -->
     <article class="feature reveal-up">
       <div class="feature__text">
-        <p class="tag">Production · Citi · Agentic AI</p>
-        <h3 class="mask-words">R2D2 — an LLM agent that speaks <em class="serif-accent">fluent treasury</em></h3>
+        <p class="tag">In production · real supermarkets · AI ingestion</p>
+        <h3 class="mask-words">Umshai — retail software that <em class="serif-accent">reads your invoices</em></h3>
         <p>
-          A natural-language layer over CitiDirect transaction data. Type
-          "payments to Acme over $50k last quarter" and R2D2 parses intent,
-          extracts entities, generates structured queries, and synthesizes
-          answers — a multi-step agentic pipeline running on sensitive financial
-          data under a zero-trust security model.
+          A retail-operations platform real supermarkets run on: suggested
+          ordering, expiry tracking, landed-cost vendor comparison, slow-mover
+          detection. The party trick: snap a photo of a supplier invoice at the
+          receiving door and Claude vision extracts the line items, fuzzy-matches
+          them against the catalog, and queues anything uncertain for review.
         </p>
         <p>
-          No LangChain. No unapproved libraries. Tool-calling contracts, prompt
-          templates, fallbacks, evals and observability — designed and built
-          from scratch, because in a bank "it mostly works" isn't a feature.
+          Photos, PDFs, and POS exports all land in the same pipeline — and
+          repeat spreadsheet layouts are cached by header hash, so the second
+          upload costs zero tokens. Web dashboard, React Native app, deployed on
+          AWS with OIDC-authenticated CI/CD and nightly verified backups.
         </p>
         <ul class="chips">
-          <li>Anthropic API</li><li>Python</li><li>Custom orchestration</li><li>Eval suites</li><li>Angular 19 MFE</li>
+          <li>Claude vision</li><li>React + Vite</li><li>Express + Prisma</li><li>Postgres</li><li>React Native</li><li>AWS</li>
         </ul>
       </div>
       <div class="feature__demo">
         <div class="terminal tilt">
-          <div class="terminal__bar"><i></i><i></i><i></i><span>r2d2 — citidirect</span></div>
+          <div class="terminal__bar"><i></i><i></i><i></i><span>umshai — ingest</span></div>
           <div class="terminal__body" id="terminal">
             <div class="t-line"><span class="t-prompt">›</span> <span id="type-target"></span><span class="t-caret"></span></div>
             <div class="t-steps" id="t-steps">
-              <div class="t-step">⟳ parsing intent…</div>
-              <div class="t-step">⟳ extracting entities → <em>{counterparty, amount, window}</em></div>
-              <div class="t-step">⟳ generating structured query…</div>
-              <div class="t-step t-ok">✓ 14 transactions · $2.3M total · summary ready</div>
-              <div class="t-step t-dim"># yes, this runs in prod</div>
+              <div class="t-step">⟳ reading with Claude vision…</div>
+              <div class="t-step">⟳ extracting line items → <em>{sku, qty, landed cost}</em></div>
+              <div class="t-step">⟳ fuzzy-matching against catalog…</div>
+              <div class="t-step t-ok">✓ 34 items matched · 2 sent to review</div>
+              <div class="t-step t-dim"># a real store ran this today</div>
             </div>
           </div>
         </div>
@@ -157,13 +158,6 @@
         <h3><a href="https://getember.space" target="_blank" rel="noopener">Ember — getember.space ↗</a></h3>
         <p>A planner built for ADHD brains. "It's 11 a.m. and you've done none of it. Good. Start from here." Re-plans your day from the present moment, rewards starting over streaks, and runs local-first and offline. One product across four codebases — Electron desktop, web + sync backend, and iOS — all sharing a single domain model.</p>
         <ul class="chips"><li>Electron</li><li>SwiftUI</li><li>Node + Postgres</li><li>Local-first sync</li><li>AI coach</li></ul>
-      </article>
-
-      <article class="card tilt reveal-up">
-        <div class="card__top"><span class="card__emoji">🛒</span><span class="tag tag--ghost">In production · real stores</span></div>
-        <h3>Umshai</h3>
-        <p>A retail-operations platform that real supermarkets run on — suggested ordering, expiry tracking, landed-cost vendor comparison, and invoice ingestion that reads photos, PDFs and POS exports with Claude vision. Web dashboard, React Native app for the receiving door, deployed on AWS with OIDC-authenticated CI/CD.</p>
-        <ul class="chips"><li>React</li><li>Express + Prisma</li><li>Postgres</li><li>React Native</li><li>Claude vision</li><li>AWS</li></ul>
       </article>
 
       <article class="card tilt reveal-up">
@@ -192,7 +186,7 @@
         <span class="tl-dot"></span>
         <p class="tl-when">2025 — now</p>
         <h3>Citi <span class="tl-role">VP · Applications Development</span></h3>
-        <p>Promoted AVP → VP in under 18 months. Now building Citi Desktop — the Electron-based container platform the trading floor runs on: window management, workspaces, and app interop for the firm's trading applications. Before that, shipped R2D2 (a production LLM agent) and Angular micro-frontends for treasury & liquidity workflows — all inside one of the most regulated engineering environments on earth.</p>
+        <p>Promoted AVP → VP in under 18 months. Started on CitiDirect — Angular micro-frontends for treasury & liquidity workflows — and now building Citi Desktop, the Electron-based container platform the trading floor runs on: window management, workspaces, and app interop for the firm's trading applications. All inside one of the most regulated engineering environments on earth.</p>
       </article>
 
       <article class="tl-item reveal-up">
@@ -223,12 +217,12 @@
     <h2 class="section__title reveal-up"><span class="section__index">03</span> Under the hood</h2>
     <div class="stack">
       <div class="stack__col reveal-up">
-        <h4>Agentic & AI</h4>
+        <h4>AI Engineering</h4>
         <ul>
-          <li>Anthropic API · AWS Bedrock</li>
+          <li>Claude vision + structured outputs — in production at Umshai</li>
           <li>RAG pipelines · vector search · embeddings</li>
           <li>Tool use, guardrails, eval methodology</li>
-          <li>ReAct · Plan-and-Execute patterns</li>
+          <li>PyTorch · transformers from scratch</li>
           <li>AWS Certified AI Practitioner</li>
         </ul>
       </div>
