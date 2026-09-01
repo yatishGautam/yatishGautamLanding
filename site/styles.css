@@ -239,11 +239,11 @@ a { color: inherit; text-decoration: none; }
 }
 .hero__title .line { display: block; overflow: hidden; padding-bottom: 0.08em; }
 .hero__title .word {
-  display: inline-block; transform: translateY(110%);
-  animation: rise 0.9s var(--ease-out) forwards;
+  display: inline-block;
+  animation: rise 0.9s var(--ease-out) backwards;
 }
 .line--sub { color: var(--ink-dim); font-size: 0.62em; margin-top: 0.35em; font-weight: 600; }
-@keyframes rise { to { transform: translateY(0); } }
+@keyframes rise { from { transform: translateY(110%); } to { transform: none; } }
 
 .swap-wrap { color: var(--accent); }
 .swap { display: inline-block; text-align: left; }
@@ -643,11 +643,14 @@ a { color: inherit; text-decoration: none; }
   stroke-linecap: round;
   stroke-dasharray: 1; stroke-dashoffset: 1;
 }
-.u-squiggle { position: relative; display: inline-block; }
-.doodle--underline { left: 0; right: 0; bottom: -0.12em; width: 100%; height: 0.18em; }
-.doodle--underline path { stroke-width: 4; }
-/* hero squiggle draws after the words rise */
-.hero__title .doodle--underline path { animation: drawIn 0.9s ease 1.7s forwards; }
+/* squiggle as a background image — no nested layers, no compositing bugs */
+.u-squiggle {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12' preserveAspectRatio='none'%3E%3Cpath d='M3,8 C22,3 38,11 58,6 C78,1 96,10 117,5' fill='none' stroke='%23c6f542' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 100% 0.14em;
+  padding-bottom: 0.1em;
+}
 @keyframes drawIn { to { stroke-dashoffset: 0; } }
 
 .u-circle { position: relative; display: inline-block; }
