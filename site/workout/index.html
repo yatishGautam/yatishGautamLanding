@@ -114,6 +114,14 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
   .demo-pics img{position:static;height:auto;aspect-ratio:850/569}
   .demo-pics img+img{animation:none}
 }
+.kb-fig{display:block;width:100%;max-width:360px;aspect-ratio:124/120;background:var(--surface);border:1px solid var(--line);border-radius:3px}
+.kb-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:4px}
+.kb-limb{fill:none;stroke:var(--ink);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.kb-far{opacity:.3}
+.kb-head{fill:var(--ink)}
+.kb-ground{stroke:var(--line);stroke-width:1.5}
+.kb-bell circle{fill:var(--accent)}
+.kb-bell .kb-handle{fill:none;stroke:var(--accent);stroke-width:1.6}
 .demo-cap{margin:4px 0 0;font:500 11px/1.3 var(--f-mono);color:var(--ink-2)}
 .demo-miss{margin:8px 0 0;font-size:14px}
 .demo-steps{margin:8px 0 0;padding-left:20px;font-size:14px;line-height:1.45}
@@ -965,6 +973,100 @@ const DEMO={
  'High pull':'Kettlebell_Sumo_High_Pull',
  'Snatch':'One-Arm_Kettlebell_Snatch'
 };
+/* ---------- kettlebell demos: side-view stick figure (facing right) animated between key poses ----------
+   Angles are absolute, in degrees: 0 = straight down, 90 = forward (right), 180 = straight up, -90 = back.
+   A pose: t torso (hip -> shoulder), a1/a2 near/far arm [upper, fore], l1/l2 near/far leg [thigh, shin].
+   Without hip:[x,y] the near leg's foot is planted at (fx, ground) and the hip is worked out from it.
+   bell: 'n' near hand, 'f' far hand, '' none. ms = time per move; pp = play forward then backward. */
+const KBG=96,SEG={to:30,ua:17,fa:15,th:24,sh:23};
+const KS={t:180,a1:[0,0],l1:[0,0],fx:66,bell:'n'};                 // standing, bell in both hands
+const RACK=[15,165],OVER=[180,180],HIKE=[-20,-35],FLOAT=[85,85];
+const HINGE={t:115,l1:[35,-15]};
+const KBA={
+  swing:{ms:650,f:[{a1:FLOAT},{...HINGE,a1:HIKE}]},
+  kbdl:{ms:1100,f:[{a1:[0,0]},{t:135,l1:[72,-30],a1:[0,0]}]},
+  goblet:{ms:1100,f:[{a1:[30,170]},{t:160,l1:[95,-30],a1:[30,170]}]},
+  floorpress:{ms:1000,f:[{hip:[86,90],t:-90,a1:[90,180],a2:[80,90],l1:[150,30]},{hip:[86,90],t:-90,a1:OVER,a2:[80,90],l1:[150,30]}]},
+  carry:{ms:500,f:[{a1:[3,0],a2:[-3,0],l1:[18,-5],l2:[-15,-25]},{a1:[3,0],a2:[-3,0],l1:[-15,-25],l2:[18,-5],fx:52}]},
+  halo:{ms:550,f:[{a1:[30,170]},{a1:[150,200]},{a1:[175,250]},{a1:[120,150]}]},
+  oneswing:{ms:650,f:[{a1:FLOAT,a2:[5,5]},{...HINGE,a1:HIKE,a2:[-10,-10]}]},
+  row:{ms:900,f:[{t:125,l1:[40,-15],a1:[0,0],a2:[60,60]},{t:125,l1:[40,-15],a1:[-100,-10],a2:[60,60]}]},
+  clean:{ms:750,f:[{a1:RACK,a2:[5,5]},{...HINGE,a1:HIKE,a2:[-10,-10]}]},
+  press:{ms:1000,f:[{a1:RACK,a2:[5,5]},{a1:OVER,a2:[8,8]}]},
+  cleanpress:{ms:750,f:[{...HINGE,a1:HIKE,a2:[-10,-10]},{a1:RACK,a2:[5,5]},{a1:OVER,a2:[8,8]},{a1:RACK,a2:[5,5]}]},
+  racksquat:{ms:1100,f:[{a1:RACK,a2:[5,5]},{t:165,l1:[95,-30],a1:RACK,a2:[30,40]}]},
+  racklunge:{ms:1100,f:[{a1:RACK,a2:[5,5],l2:[0,0]},{a1:RACK,a2:[5,5],l1:[85,-5],l2:[-20,-85]}]},
+  tgu:{ms:1000,pp:1,f:[
+    {hip:[86,90],t:-90,a1:OVER,a2:[80,90],l1:[150,30],l2:[90,90]},
+    {hip:[86,90],t:-125,a1:OVER,a2:[10,90],l1:[150,30],l2:[90,90]},
+    {hip:[86,90],t:-150,a1:OVER,a2:[-20,-20],l1:[150,30],l2:[90,90]},
+    {hip:[86,72],t:-115,a1:OVER,a2:[-15,-15],l1:[100,-5],l2:[70,60]},
+    {hip:[76,72],t:-180,a1:OVER,a2:[0,0],l1:[90,0],l2:[0,-90]},
+    {hip:[76,49],t:-180,a1:OVER,a2:[0,0],l1:[0,0],l2:[0,0]}]},
+  windmill:{ms:1300,f:[{a1:OVER,a2:[0,0],l1:[0,0]},{t:105,a1:OVER,a2:[0,0],l1:[15,-5]}]},
+  highpull:{ms:700,f:[{...HINGE,a1:HIKE,a2:[-10,-10]},{a1:[-140,95],a2:[5,5]}]},
+  snatch:{ms:650,f:[{...HINGE,a1:HIKE,a2:[-10,-10]},{a1:[90,120],a2:[5,5]},{a1:OVER,a2:[8,8]},{a1:[90,120],a2:[5,5]}]}
+};
+function kbDir(a){a*=Math.PI/180;return[Math.sin(a),Math.cos(a)]}
+function kbAdd(p,a,len){const d=kbDir(a);return[p[0]+d[0]*len,p[1]+d[1]*len]}
+function kbResolve(f){
+  const p={...KS,...f};p.a2=p.a2||p.a1;p.l2=p.l2||p.l1;
+  if(!p.hip){
+    const knee=kbAdd([p.fx,KBG],p.l1[1],-SEG.sh);p.hip=kbAdd(knee,p.l1[0],-SEG.th);
+  }
+  return p;
+}
+function kbLerp(a,b,u){
+  const L=(x,y)=>x+(y-x)*u,L2=(x,y)=>[L(x[0],y[0]),L(x[1],y[1])];
+  return{hip:L2(a.hip,b.hip),t:L(a.t,b.t),a1:L2(a.a1,b.a1),a2:L2(a.a2,b.a2),l1:L2(a.l1,b.l1),l2:L2(a.l2,b.l2),bell:u<.5?a.bell:b.bell};
+}
+function kbSvg(){
+  const s=el('svg',{viewBox:'10 -22 124 120',class:'kb-fig','aria-hidden':'true'});
+  const g={};
+  s.append(el('line',{x1:0,y1:KBG+1.5,x2:140,y2:KBG+1.5,class:'kb-ground'}));
+  ['farleg','fararm'].forEach(k=>{g[k]=el('polyline',{class:'kb-limb kb-far'});s.append(g[k])});
+  ['torso','nearleg'].forEach(k=>{g[k]=el('polyline',{class:'kb-limb'});s.append(g[k])});
+  g.head=el('circle',{r:6,class:'kb-head'});s.append(g.head);
+  g.bell=el('g',{class:'kb-bell'});g.bell.append(el('circle',{r:5.5,cx:0,cy:0}),el('circle',{r:3,cx:0,cy:-5.5,class:'kb-handle'}));s.append(g.bell);
+  g.neararm=el('polyline',{class:'kb-limb'});s.append(g.neararm);
+  return[s,g];
+}
+function kbDraw(g,p){
+  const pt=a=>a.map(x=>x.toFixed(1)).join(','),pts=a=>a.map(pt).join(' ');
+  const sh=kbAdd(p.hip,p.t,SEG.to),head=kbAdd(p.hip,p.t,SEG.to+10);
+  const arm=a=>{const e=kbAdd(sh,a[0],SEG.ua);return[sh,e,kbAdd(e,a[1],SEG.fa)]};
+  const leg=l=>{const k=kbAdd(p.hip,l[0],SEG.th);return[p.hip,k,kbAdd(k,l[1],SEG.sh)]};
+  const n=arm(p.a1),f=arm(p.a2);
+  g.torso.setAttribute('points',pts([p.hip,sh]));
+  g.nearleg.setAttribute('points',pts(leg(p.l1)));g.farleg.setAttribute('points',pts(leg(p.l2)));
+  g.neararm.setAttribute('points',pts(n));g.fararm.setAttribute('points',pts(f));
+  g.head.setAttribute('cx',head[0].toFixed(1));g.head.setAttribute('cy',head[1].toFixed(1));
+  const hand=p.bell==='f'?f:n,b=kbAdd(hand[2],(p.bell==='f'?p.a2:p.a1)[1],5);
+  g.bell.style.display=p.bell?'':'none';
+  g.bell.setAttribute('transform','translate('+b[0].toFixed(1)+' '+b[1].toFixed(1)+')');
+}
+/* animated figure; with reduced motion, the key poses side by side instead */
+function kbAnim(id){
+  const A=KBA[id],F=A.f.map(kbResolve);
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){
+    const row=h('div',{class:'kb-strip'});
+    F.forEach(p=>{const[s,g]=kbSvg();kbDraw(g,p);row.append(s)});
+    return row;
+  }
+  const[s,g]=kbSvg(),seq=F.map((_,i)=>i);
+  if(A.pp)for(let i=F.length-2;i>0;i--)seq.push(i);
+  let t0=null;
+  const tick=now=>{
+    if(t0==null)t0=now;
+    if(!s.isConnected&&now-t0>1000)return;   // removed from the page: stop
+    const x=(now-t0)/A.ms,i=Math.floor(x)%seq.length,u=x%1,hold=.25;
+    const v=u<hold?0:(u-hold)/(1-hold),e=.5-.5*Math.cos(Math.PI*v);
+    kbDraw(g,kbLerp(F[seq[i]],F[seq[(i+1)%seq.length]],e));
+    requestAnimationFrame(tick);
+  };
+  kbDraw(g,F[0]);requestAnimationFrame(tick);
+  return s;
+}
 /* ---------- body drawing (right-hand half is mirrored to make the left) ---------- */
 const SIL={
   torso:'M100 60 L131 68 C135 92 133 122 127 152 C124 172 126 190 131 208 L100 208 Z',
@@ -1304,8 +1406,8 @@ function renderSheet(){
         h('p',{class:'meta'},[x.muscle,x.equip,x.restTxt?x.restTxt[0].toUpperCase()+x.restTxt.slice(1):'Rest '+x.rest+' s'].filter(Boolean).join(' · ')),
         x.cue?h('p',{class:'cue'},x.cue):null,
         x.more?h('p',{class:'more'},x.more):null,
-        DEMO[x.name]?h('button',{type:'button',class:'demo-btn','data-demo':x.name,'aria-expanded':demoOpen.has(x.name)?'true':'false'},demoOpen.has(x.name)?'Hide demo':'How to do it'):null,
-        DEMO[x.name]&&demoOpen.has(x.name)?demoBox(x):null,
+        hasDemo(x)?h('button',{type:'button',class:'demo-btn','data-demo':x.name,'aria-expanded':demoOpen.has(x.name)?'true':'false'},demoOpen.has(x.name)?'Hide demo':'How to do it'):null,
+        hasDemo(x)&&demoOpen.has(x.name)?demoBox(x):null,
         x.kb?h('button',{type:'button',class:'btn','data-kb':x.kb},'Got it, add to my workouts'):null)));
   });
   $('#fin').hidden=!plan.finisher;$('#fin').textContent=plan.finisher||'';
@@ -1315,15 +1417,19 @@ function renderSheet(){
 }
 /* exercise demo: start/end photos cross-fade like a GIF, plus the library's steps (loaded on first open) */
 const demoOpen=new Set(),demoSteps=new Map();
+function kbOf(x){return x.equip==='Kettlebell'?KB.find(m=>m.name===x.name&&KBA[m.id]):null}
+function hasDemo(x){return!!(kbOf(x)||DEMO[x.name])}
 function demoBox(x){
+  const kb=kbOf(x);
+  if(kb)return h('div',{class:'demo'},kbAnim(kb.id),
+    h('p',{class:'demo-cap'},'Side view · the red ball is the bell'),
+    x.more?null:h('p',{class:'demo-miss'},'Common mistake: '+kb.miss));
   const v=DEMO[x.name],near=v[0]==='~',id=near?v.slice(1):v,base=DEMO_BASE+id+'/';
   const box=h('div',{class:'demo'},
     h('div',{class:'demo-pics'},
       h('img',{src:base+'0.jpg',alt:x.name+': start position',decoding:'async'}),
       h('img',{src:base+'1.jpg',alt:x.name+': end position',decoding:'async'})),
     h('p',{class:'demo-cap'},(near?'Similar movement, same idea · ':'')+'Photos: free-exercise-db'));
-  const kb=KB.find(m=>m.name===x.name);
-  if(kb&&kb.miss&&!x.more)box.append(h('p',{class:'demo-miss'},'Common mistake: '+kb.miss));
   if(!near){const ol=h('ol',{class:'demo-steps'});box.append(ol);loadSteps(id,ol)}
   return box;
 }
