@@ -100,6 +100,24 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .kbp .hint{min-height:0}
 .more{margin:6px 0 0;font-size:13px;color:var(--ink-2)}
 .lift .btn{margin-top:10px}
+.demo-btn{margin-top:8px;padding:8px 12px;min-height:36px;border:1px solid var(--line);border-radius:3px;background:var(--surface);color:var(--ink);font:600 13px/1 var(--f-body);cursor:pointer}
+.demo-btn::before{content:'▶ '}
+.demo-btn[aria-expanded="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.demo-btn[aria-expanded="true"]::before{content:''}
+.demo{margin-top:10px}
+.demo-pics{position:relative;aspect-ratio:850/569;border-radius:3px;overflow:hidden;background:var(--line)}
+.demo-pics img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.demo-pics img+img{animation:demo 2.6s ease-in-out infinite alternate}
+@keyframes demo{0%,30%{opacity:0}70%,100%{opacity:1}}
+@media (prefers-reduced-motion:reduce){
+  .demo-pics{aspect-ratio:auto;display:grid;grid-template-columns:1fr 1fr;gap:4px;background:none}
+  .demo-pics img{position:static;height:auto;aspect-ratio:850/569}
+  .demo-pics img+img{animation:none}
+}
+.demo-cap{margin:4px 0 0;font:500 11px/1.3 var(--f-mono);color:var(--ink-2)}
+.demo-miss{margin:8px 0 0;font-size:14px}
+.demo-steps{margin:8px 0 0;padding-left:20px;font-size:14px;line-height:1.45}
+.demo-steps li+li{margin-top:4px}
 
 .sheet{border:1px solid var(--line);background:var(--surface);min-width:0}
 .sheet-h{padding:20px 20px 16px;border-bottom:1px solid var(--line)}
@@ -741,6 +759,212 @@ const GOALS={
   kbemom:{label:'EMOM',kb:'emom',spec:'a set every minute',blurb:'a set at the top of every minute for a fixed number of minutes',c:{sets:10,reps:'10',rest:0},i:{sets:10,reps:'10',rest:0},fin:0,finisher:''}
 };
 
+/* ---------- exercise demos: photos + steps from free-exercise-db (Unlicense, public domain), pinned to one commit.
+   value = library id; a leading ~ means a close variant (shown as 'Similar movement', without the library's steps) ---------- */
+const DEMO_BASE='https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/';
+const DEMO={
+ 'Barbell overhead press':'Standing_Military_Press',
+ 'Seated dumbbell shoulder press':'Dumbbell_Shoulder_Press',
+ 'Machine shoulder press':'~Machine_Shoulder_Military_Press',
+ 'Arnold press':'Arnold_Dumbbell_Press',
+ 'Dumbbell front raise':'Front_Dumbbell_Raise',
+ 'Cable front raise':'Front_Cable_Raise',
+ 'Wide-grip upright row':'Upright_Barbell_Row',
+ 'Dumbbell lateral raise':'Side_Lateral_Raise',
+ 'Cable lateral raise':'Cable_Seated_Lateral_Raise',
+ 'Machine lateral raise':'~Side_Lateral_Raise',
+ 'Leaning single-arm lateral raise':'~One-Arm_Incline_Lateral_Raise',
+ 'Wide-grip seated cable row':'Seated_Cable_Rows',
+ 'Reverse pec deck':'Reverse_Machine_Flyes',
+ 'Face pull':'Face_Pull',
+ 'Rear delt dumbbell fly':'~Seated_Bent-Over_Rear_Delt_Raise',
+ 'Cable rear delt fly':'Cable_Rear_Delt_Fly',
+ 'Incline bench reverse fly':'~Dumbbell_Lying_Rear_Lateral_Raise',
+ 'Incline barbell press':'Barbell_Incline_Bench_Press_-_Medium_Grip',
+ 'Incline dumbbell press':'Incline_Dumbbell_Press',
+ 'Incline machine press':'Leverage_Incline_Chest_Press',
+ 'Feet-elevated push-ups':'Push-Ups_With_Feet_Elevated',
+ 'Low-to-high cable fly':'Low_Cable_Crossover',
+ 'Incline dumbbell fly':'Incline_Dumbbell_Flyes',
+ 'Barbell bench press':'Barbell_Bench_Press_-_Medium_Grip',
+ 'Flat dumbbell press':'Dumbbell_Bench_Press',
+ 'Machine chest press':'Machine_Bench_Press',
+ 'Push-ups':'Pushups',
+ 'Pec deck fly':'Butterfly',
+ 'Standing cable fly':'Cable_Crossover',
+ 'Decline barbell press':'Decline_Barbell_Bench_Press',
+ 'Decline dumbbell press':'Decline_Dumbbell_Bench_Press',
+ 'Chest dips':'Dips_-_Chest_Version',
+ 'High-to-low cable fly':'~Cable_Crossover',
+ 'Decline dumbbell fly':'Decline_Dumbbell_Flyes',
+ 'Dumbbell pullover':'Bent-Arm_Dumbbell_Pullover',
+ 'Cable external rotation':'External_Rotation_with_Cable',
+ 'Side-lying dumbbell external rotation':'External_Rotation',
+ 'Cable internal rotation':'Cable_Internal_Rotation',
+ 'Band pull-apart':'Band_Pull_Apart',
+ 'Barbell shrug':'Barbell_Shrug',
+ 'Dumbbell shrug':'Dumbbell_Shrug',
+ 'Rack pull':'Rack_Pulls',
+ 'Farmer’s carry':'Farmers_Walk',
+ 'Cable shrug':'Cable_Shrugs',
+ 'Wide-grip dumbbell upright row':'Standing_Dumbbell_Upright_Row',
+ 'Chest-supported row':'~Dumbbell_Incline_Row',
+ 'T-bar row':'T-Bar_Row_with_Handle',
+ 'Seated cable row':'Seated_Cable_Rows',
+ 'Scapular pull-up':'Scapular_Pull-Up',
+ 'Straight-arm pulldown':'Straight-Arm_Pulldown',
+ 'Barbell row':'Bent_Over_Barbell_Row',
+ 'Pull-up':'Pullups',
+ 'Lat pulldown':'Wide-Grip_Lat_Pulldown',
+ 'Neutral-grip pulldown':'V-Bar_Pulldown',
+ 'One-arm dumbbell row':'One-Arm_Dumbbell_Row',
+ 'Single-arm cable pulldown':'One_Arm_Lat_Pulldown',
+ 'Conventional deadlift':'Barbell_Deadlift',
+ 'Romanian deadlift':'Romanian_Deadlift',
+ 'Good morning':'Good_Morning',
+ 'Back extension':'Hyperextensions_Back_Extensions',
+ 'Reverse hyperextension':'Reverse_Hyperextension',
+ 'Chin-up':'Chin-Up',
+ 'Barbell curl':'Barbell_Curl',
+ 'Incline dumbbell curl':'Incline_Dumbbell_Curl',
+ 'Drag curl':'Drag_Curl',
+ 'Wide-grip barbell curl':'Wide-Grip_Standing_Barbell_Curl',
+ 'EZ-bar preacher curl':'Preacher_Curl',
+ 'Spider curl':'Spider_Curl',
+ 'Concentration curl':'Concentration_Curls',
+ 'Cable curl':'Standing_Biceps_Cable_Curl',
+ 'Hammer curl':'Hammer_Curls',
+ 'Cross-body hammer curl':'Cross_Body_Hammer_Curl',
+ 'Reverse curl':'Reverse_Barbell_Curl',
+ 'Rope cable hammer curl':'Cable_Hammer_Curls_-_Rope_Attachment',
+ 'Zottman curl':'Zottman_Curl',
+ 'Close-grip bench press':'Close-Grip_Barbell_Bench_Press',
+ 'Parallel-bar dips':'Dips_-_Triceps_Version',
+ 'Overhead cable extension':'Cable_Rope_Overhead_Triceps_Extension',
+ 'Dumbbell overhead extension':'Standing_Dumbbell_Triceps_Extension',
+ 'EZ-bar skull crusher':'EZ-Bar_Skullcrusher',
+ 'Diamond push-ups':'Push-Ups_-_Close_Triceps_Position',
+ 'Cable pushdown':'Triceps_Pushdown',
+ 'Rope pushdown':'Triceps_Pushdown_-_Rope_Attachment',
+ 'Single-arm cable pushdown':'Cable_One_Arm_Tricep_Extension',
+ 'Close-grip push-ups':'Push-Ups_-_Close_Triceps_Position',
+ 'Reverse-grip cable pushdown':'Reverse_Grip_Triceps_Pushdown',
+ 'Single-arm reverse-grip pushdown':'~Reverse_Grip_Triceps_Pushdown',
+ 'Dumbbell kickback':'Tricep_Dumbbell_Kickback',
+ 'Bench dips':'Bench_Dips',
+ 'Wrist curl':'Seated_Dumbbell_Palms-Up_Wrist_Curl',
+ 'Reverse wrist extension':'Seated_Dumbbell_Palms-Down_Wrist_Curl',
+ 'Hanging leg raise':'Hanging_Leg_Raise',
+ 'Ab wheel rollout':'Ab_Roller',
+ 'Cable crunch':'Cable_Crunch',
+ 'Plank':'Plank',
+ 'Decline sit-up':'~Sit-Up',
+ 'Dead bug':'Dead_Bug',
+ 'Captain’s chair knee raise':'~Knee_Hip_Raise_On_Parallel_Bars',
+ 'Reverse crunch':'Reverse_Crunch',
+ 'Hanging knee raise':'~Hanging_Leg_Raise',
+ 'Lying leg raise':'Flat_Bench_Lying_Leg_Raise',
+ 'Decline reverse crunch':'Decline_Reverse_Crunch',
+ 'Pallof press':'Pallof_Press',
+ 'Cable woodchop':'Standing_Cable_Wood_Chop',
+ 'Side plank':'Side_Bridge',
+ 'Russian twist':'Russian_Twist',
+ 'Mountain climbers':'Mountain_Climbers',
+ 'Sumo squat':'~Plie_Dumbbell_Squat',
+ 'Sumo deadlift':'Sumo_Deadlift',
+ 'Adductor machine':'Thigh_Adductor',
+ 'Cable hip adduction':'Cable_Hip_Adduction',
+ 'Heel-elevated goblet squat':'~Goblet_Squat',
+ 'Narrow-stance leg press':'Narrow_Stance_Leg_Press',
+ 'Narrow-stance hack squat':'Narrow_Stance_Hack_Squats',
+ 'Leg extension':'Leg_Extensions',
+ 'Barbell front squat':'Front_Barbell_Squat',
+ 'Sissy squat':'Weighted_Sissy_Squat',
+ 'Wide-stance leg press':'~Leg_Press',
+ 'Back squat':'Barbell_Squat',
+ 'Hack squat':'Hack_Squat',
+ 'Walking lunge':'Bodyweight_Walking_Lunge',
+ 'Single-leg extension':'Single-Leg_Leg_Extension',
+ 'Barbell hip thrust':'Barbell_Hip_Thrust',
+ 'Bulgarian split squat':'~Split_Squat_with_Dumbbells',
+ 'Dumbbell step-up':'Dumbbell_Step_Ups',
+ 'Cable kickback':'One-Legged_Cable_Kickback',
+ 'Single-leg Romanian deadlift':'~Kettlebell_One-Legged_Deadlift',
+ 'Hip abduction machine':'Thigh_Abductor',
+ 'Side-lying leg raise':'Side_Leg_Raises',
+ 'Banded lateral walk':'Monster_Walk',
+ 'Stiff-leg dumbbell deadlift':'Stiff-Legged_Dumbbell_Deadlift',
+ 'Cable pull-through':'Pull_Through',
+ 'Seated leg curl':'Seated_Leg_Curl',
+ 'Lying leg curl':'Lying_Leg_Curls',
+ 'Nordic hamstring curl':'Natural_Glute_Ham_Raise',
+ 'Standing calf raise':'Standing_Calf_Raises',
+ 'Leg press calf raise':'Calf_Press_On_The_Leg_Press_Machine',
+ 'Donkey calf raise':'Donkey_Calf_Raises',
+ 'Single-leg calf raise':'~Standing_Dumbbell_Calf_Raise',
+ 'Seated calf raise':'Seated_Calf_Raise',
+ 'Dumbbell seated calf raise':'Dumbbell_Seated_One-Leg_Calf_Raise',
+ 'Bent-knee calf raise':'~Seated_Calf_Raise',
+ 'Neck flexion with plate':'Lying_Face_Up_Plate_Neck_Resistance',
+ 'Neck extension with plate':'Lying_Face_Down_Plate_Neck_Resistance',
+ 'Isometric neck hold':'Isometric_Neck_Exercise_-_Front_And_Back',
+ 'Decline push-up':'Decline_Push-Up',
+ 'Deficit decline push-up':'~Decline_Push-Up',
+ 'Slow-negative decline push-up':'~Decline_Push-Up',
+ 'Push-up board: chest position':'~Pushups',
+ 'Deficit push-up':'~Pushups',
+ 'Tempo push-up':'~Pushups',
+ 'Incline push-up':'Incline_Push-Up',
+ 'Wide low-hand push-up':'~Push-Up_Wide',
+ 'Isometric palm press (chest)':'~Isometric_Chest_Squeezes',
+ 'Side-lying external rotation':'External_Rotation',
+ 'Table row':'~Inverted_Row',
+ 'Wide table row':'~Inverted_Row',
+ 'Underhand table row':'~Inverted_Row',
+ 'Narrow underhand table row':'~Inverted_Row',
+ 'Bodyweight good morning':'~Good_Morning',
+ 'Table reverse hyper':'~Reverse_Hyperextension',
+ 'Superman':'Superman',
+ 'Superman pull':'~Superman',
+ 'Push-up board: triceps position':'~Push-Ups_-_Close_Triceps_Position',
+ 'Chair dip':'~Bench_Dips',
+ 'Chair dip (lean forward)':'~Bench_Dips',
+ 'Slow-negative triceps push-up':'~Push-Ups_-_Close_Triceps_Position',
+ 'Fist plank':'~Plank',
+ 'Ab roller rollout':'Ab_Roller',
+ 'Ab roller angled rollout':'~Ab_Roller',
+ 'Flutter kicks':'Flutter_Kicks',
+ 'Bicycle crunch':'~Cross-Body_Crunch',
+ 'Seated knee tuck':'Seated_Leg_Tucks',
+ 'Heel-elevated squat':'~Bodyweight_Squat',
+ 'Pause squat':'~Bodyweight_Squat',
+ 'Jump squat':'Freehand_Jump_Squat',
+ 'Couch hip thrust':'~Barbell_Hip_Thrust',
+ 'Single-leg glute bridge':'Single_Leg_Glute_Bridge',
+ 'Long-lever glute bridge':'~Butt_Lift_Bridge',
+ 'Donkey kick':'Glute_Kickback',
+ 'Towel leg curl':'~Ball_Leg_Curl',
+ 'Single-leg towel leg curl':'~Ball_Leg_Curl',
+ 'Nordic curl (heels under the couch)':'~Natural_Glute_Ham_Raise',
+ 'Slow calf raise':'~Standing_Calf_Raises',
+ 'Wall sit calf raise':'~Standing_Calf_Raises',
+ 'Bent-knee single-leg calf raise':'~Standing_Dumbbell_Calf_Raise',
+ 'Lying neck flexion':'~Lying_Face_Up_Plate_Neck_Resistance',
+ 'Lying neck extension':'~Lying_Face_Down_Plate_Neck_Resistance',
+ 'Two-hand swing':'~One-Arm_Kettlebell_Swings',
+ 'Goblet squat':'Goblet_Squat',
+ 'Kettlebell floor press':'One-Arm_Kettlebell_Floor_Press',
+ 'Halo':'Kettlebell_Halo',
+ 'One-arm swing':'One-Arm_Kettlebell_Swings',
+ 'Single-arm row':'One-Arm_Kettlebell_Row',
+ 'Clean':'One-Arm_Kettlebell_Clean',
+ 'Overhead press':'~Two-Arm_Kettlebell_Military_Press',
+ 'Front rack squat':'~Front_Squats_With_Two_Kettlebells',
+ 'Turkish get-up':'Kettlebell_Turkish_Get-Up_Lunge_style',
+ 'Windmill':'Kettlebell_Windmill',
+ 'High pull':'Kettlebell_Sumo_High_Pull',
+ 'Snatch':'One-Arm_Kettlebell_Snatch'
+};
 /* ---------- body drawing (right-hand half is mirrored to make the left) ---------- */
 const SIL={
   torso:'M100 60 L131 68 C135 92 133 122 127 152 C124 172 126 190 131 208 L100 208 Z',
@@ -1080,12 +1304,45 @@ function renderSheet(){
         h('p',{class:'meta'},[x.muscle,x.equip,x.restTxt?x.restTxt[0].toUpperCase()+x.restTxt.slice(1):'Rest '+x.rest+' s'].filter(Boolean).join(' · ')),
         x.cue?h('p',{class:'cue'},x.cue):null,
         x.more?h('p',{class:'more'},x.more):null,
+        DEMO[x.name]?h('button',{type:'button',class:'demo-btn','data-demo':x.name,'aria-expanded':demoOpen.has(x.name)?'true':'false'},demoOpen.has(x.name)?'Hide demo':'How to do it'):null,
+        DEMO[x.name]&&demoOpen.has(x.name)?demoBox(x):null,
         x.kb?h('button',{type:'button',class:'btn','data-kb':x.kb},'Got it, add to my workouts'):null)));
   });
   $('#fin').hidden=!plan.finisher;$('#fin').textContent=plan.finisher||'';
   $('#fallback').hidden=true;$('#exStatus').hidden=true;
   renderKb();
   current=plan;
+}
+/* exercise demo: start/end photos cross-fade like a GIF, plus the library's steps (loaded on first open) */
+const demoOpen=new Set(),demoSteps=new Map();
+function demoBox(x){
+  const v=DEMO[x.name],near=v[0]==='~',id=near?v.slice(1):v,base=DEMO_BASE+id+'/';
+  const box=h('div',{class:'demo'},
+    h('div',{class:'demo-pics'},
+      h('img',{src:base+'0.jpg',alt:x.name+': start position',decoding:'async'}),
+      h('img',{src:base+'1.jpg',alt:x.name+': end position',decoding:'async'})),
+    h('p',{class:'demo-cap'},(near?'Similar movement, same idea · ':'')+'Photos: free-exercise-db'));
+  const kb=KB.find(m=>m.name===x.name);
+  if(kb&&kb.miss&&!x.more)box.append(h('p',{class:'demo-miss'},'Common mistake: '+kb.miss));
+  if(!near){const ol=h('ol',{class:'demo-steps'});box.append(ol);loadSteps(id,ol)}
+  return box;
+}
+function loadSteps(id,ol){
+  const fill=a=>ol.replaceChildren(...a
+    .filter(s=>!/^\s*(repeat|variations?|caution|tip)\b/i.test(s))
+    .slice(0,4)
+    .map(s=>h('li',{},s.split(/(?<=\.)\s+/).slice(0,2).join(' ').replace(/\s*Tip:?\s.*$/,''))));
+  if(demoSteps.has(id))return fill(demoSteps.get(id));
+  fetch(DEMO_BASE+id+'.json').then(r=>r.ok?r.json():null).then(d=>{
+    if(d&&Array.isArray(d.instructions)){demoSteps.set(id,d.instructions.map(String));fill(demoSteps.get(id))}
+  }).catch(()=>{});
+}
+function demoToggle(e){
+  const b=e.target.closest('[data-demo]');if(!b)return;
+  const n=b.dataset.demo;if(demoOpen.has(n))demoOpen.delete(n);else demoOpen.add(n);
+  const li=b.closest('.lift'),i=[...li.parentNode.children].indexOf(li);
+  renderSheet();
+  const nb=$('#lifts').children[i]&&$('#lifts').children[i].querySelector('[data-demo]');if(nb)nb.focus({preventScroll:true});
 }
 function renderKb(){
   const box=$('#kbSkills');box.hidden=state.where!=='kb';if(box.hidden)return;
@@ -1124,6 +1381,7 @@ function toggle(id){
 }
 const figs=$('#figs');
 $('#lifts').addEventListener('click',kbToggle);
+$('#lifts').addEventListener('click',demoToggle);
 $('#kbList').addEventListener('click',kbToggle);
 figs.addEventListener('click',e=>{const g=e.target.closest('.m');if(g)toggle(g.dataset.m)});
 figs.addEventListener('keydown',e=>{
