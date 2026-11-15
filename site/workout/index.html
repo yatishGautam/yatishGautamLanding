@@ -114,14 +114,23 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
   .demo-pics img{position:static;height:auto;aspect-ratio:850/569}
   .demo-pics img+img{animation:none}
 }
-.kb-fig{display:block;width:100%;max-width:360px;aspect-ratio:124/120;background:var(--surface);border:1px solid var(--line);border-radius:3px}
-.kb-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:4px}
-.kb-limb{fill:none;stroke:var(--ink);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
-.kb-far{opacity:.3}
-.kb-head{fill:var(--ink)}
-.kb-ground{stroke:var(--line);stroke-width:1.5}
+.kb-demo,.kb-strip{max-width:340px}
+.kb-fig{display:block;width:100%;height:auto;background:var(--surface);border:1px solid var(--line);border-radius:3px}
+.kb-s{fill:none;stroke:var(--ink);stroke-linecap:round;stroke-linejoin:round}
+.kb-s.far{stroke:var(--muscle-hi)}
+.kb-s.halo{stroke:var(--surface)}
+.kb-head,.kb-hand{fill:var(--ink)}
+.kb-hand.far{fill:var(--muscle-hi)}
+.kb-ground{stroke:var(--muscle-hi);stroke-width:1.2}
+.kb-path{fill:none;stroke:var(--accent);stroke-width:1.1;stroke-dasharray:.1 3.2;stroke-linecap:round;opacity:.7}
 .kb-bell circle{fill:var(--accent)}
-.kb-bell .kb-handle{fill:none;stroke:var(--accent);stroke-width:1.6}
+.kb-bell path{fill:none;stroke:var(--accent);stroke-width:2.4;stroke-linecap:round}
+.kb-cues{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:4px}
+.kb-cues li{padding:6px 10px;border-left:3px solid var(--line);font-size:14px;line-height:1.35;color:var(--ink-2)}
+.kb-cues li.on{border-left-color:var(--accent);color:var(--ink);font-weight:600}
+.kb-strip{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kb-strip figure{margin:0}
+.kb-strip figcaption{margin-top:4px;font-size:12px;line-height:1.3;color:var(--ink-2)}
 .demo-cap{margin:4px 0 0;font:500 11px/1.3 var(--f-mono);color:var(--ink-2)}
 .demo-miss{margin:8px 0 0;font-size:14px}
 .demo-steps{margin:8px 0 0;padding-left:20px;font-size:14px;line-height:1.45}
@@ -973,99 +982,187 @@ const DEMO={
  'High pull':'Kettlebell_Sumo_High_Pull',
  'Snatch':'One-Arm_Kettlebell_Snatch'
 };
-/* ---------- kettlebell demos: side-view stick figure (facing right) animated between key poses ----------
+/* ---------- kettlebell demos: side-view figure (facing right) animated between key poses ----------
    Angles are absolute, in degrees: 0 = straight down, 90 = forward (right), 180 = straight up, -90 = back.
-   A pose: t torso (hip -> shoulder), a1/a2 near/far arm [upper, fore], l1/l2 near/far leg [thigh, shin].
-   Without hip:[x,y] the near leg's foot is planted at (fx, ground) and the hip is worked out from it.
-   bell: 'n' near hand, 'f' far hand, '' none. ms = time per move; pp = play forward then backward. */
-const KBG=96,SEG={to:30,ua:17,fa:15,th:24,sh:23};
-const KS={t:180,a1:[0,0],l1:[0,0],fx:66,bell:'n'};                 // standing, bell in both hands
-const RACK=[15,165],OVER=[180,180],HIKE=[-20,-35],FLOAT=[85,85];
-const HINGE={t:115,l1:[35,-15]};
+   A pose: t torso (hip -> shoulder), a1/a2 near/far arm [upper, fore], l1/l2 near/far leg [thigh, shin, foot=90].
+   Without hip:[x,y] the near leg's ankle is planted at (fx, ankle height) and the hip is worked out from it.
+   bell: 'n' in the near hand, '' none. bd: where the ball sits from the hand: unset = hangs straight down,
+   'arm' = flung out along the forearm (swings), or an angle. cue: the coaching line shown at that pose.
+   e: how the figure arrives at the pose: 'snap' (explosive), 'drop' (falls into it), unset = smooth.
+   ms = time per move (a pose can override it); pp = play forward then backward. */
+const KBG=96,KBY=93,SEG={to:30,nk:4,hd:6.5,ua:16,fa:14,th:24,sh:23,ft:8},KBR=7.5;
+const KS={t:180,a1:[0,0],l1:[0,0],fx:66,bell:'n'};
+const RACK=[15,165],OVER=[182,180],HIKE=[-20,-35],FLOAT=[85,85];
+const HINGE={t:115,l1:[30,-5]};
 const KBA={
-  swing:{ms:650,f:[{a1:FLOAT},{...HINGE,a1:HIKE}]},
-  kbdl:{ms:1100,f:[{a1:[0,0]},{t:135,l1:[72,-30],a1:[0,0]}]},
-  goblet:{ms:1100,f:[{a1:[30,170]},{t:160,l1:[95,-30],a1:[30,170]}]},
-  floorpress:{ms:1000,f:[{hip:[86,90],t:-90,a1:[90,180],a2:[80,90],l1:[150,30]},{hip:[86,90],t:-90,a1:OVER,a2:[80,90],l1:[150,30]}]},
-  carry:{ms:500,f:[{a1:[3,0],a2:[-3,0],l1:[18,-5],l2:[-15,-25]},{a1:[3,0],a2:[-3,0],l1:[-15,-25],l2:[18,-5],fx:52}]},
-  halo:{ms:550,f:[{a1:[30,170]},{a1:[150,200]},{a1:[175,250]},{a1:[120,150]}]},
-  oneswing:{ms:650,f:[{a1:FLOAT,a2:[5,5]},{...HINGE,a1:HIKE,a2:[-10,-10]}]},
-  row:{ms:900,f:[{t:125,l1:[40,-15],a1:[0,0],a2:[60,60]},{t:125,l1:[40,-15],a1:[-100,-10],a2:[60,60]}]},
-  clean:{ms:750,f:[{a1:RACK,a2:[5,5]},{...HINGE,a1:HIKE,a2:[-10,-10]}]},
-  press:{ms:1000,f:[{a1:RACK,a2:[5,5]},{a1:OVER,a2:[8,8]}]},
-  cleanpress:{ms:750,f:[{...HINGE,a1:HIKE,a2:[-10,-10]},{a1:RACK,a2:[5,5]},{a1:OVER,a2:[8,8]},{a1:RACK,a2:[5,5]}]},
-  racksquat:{ms:1100,f:[{a1:RACK,a2:[5,5]},{t:165,l1:[95,-30],a1:RACK,a2:[30,40]}]},
-  racklunge:{ms:1100,f:[{a1:RACK,a2:[5,5],l2:[0,0]},{a1:RACK,a2:[5,5],l1:[85,-5],l2:[-20,-85]}]},
+  swing:{ms:620,f:[
+    {a1:FLOAT,bd:'arm',e:'snap',cue:'Snap the hips. The bell floats up by itself.'},
+    {...HINGE,a1:HIKE,bd:'arm',e:'drop',cue:'Hike it back. Hips go back, not down.'}]},
+  kbdl:{ms:1100,f:[
+    {cue:'Stand tall and squeeze the glutes.'},
+    {t:125,l1:[70,-25],cue:'Push the hips back. Flat back, arms long.'}]},
+  goblet:{ms:1100,f:[
+    {a1:[30,170],bd:60,cue:'Stand tall, bell at the chest.'},
+    {t:160,l1:[95,-30],a1:[30,170],bd:60,cue:'Sit between the hips. Chest up, elbows inside the knees.'}]},
+  floorpress:{ms:1000,f:[
+    {hip:[86,89],t:-90,a1:[90,180],a2:[80,90],l1:[145,20],cue:'Lower until the upper arm touches the floor.'},
+    {hip:[86,89],t:-90,a1:[180,180],a2:[80,90],l1:[145,20],cue:'Press straight up. Keep the wrist straight.'}]},
+  carry:{ms:520,hold:0,f:[
+    {a1:[3,0],a2:[-3,0],l1:[18,-5],l2:[-15,-25,45],cue:'Walk tall. Do not lean away from the bell.'},
+    {a1:[3,0],a2:[-3,0],l1:[-15,-25,45],l2:[18,-5],fx:52,cue:'Walk tall. Do not lean away from the bell.'}]},
+  halo:{ms:560,hold:0,f:[
+    {a1:[30,170],bd:60,cue:'Circle the bell close around the head.'},
+    {a1:[150,200],cue:'Ribs down. Only the arms move.'},
+    {a1:[175,250],cue:'Ribs down. Only the arms move.'},
+    {a1:[120,150],cue:'Circle the bell close around the head.'}]},
+  oneswing:{ms:620,f:[
+    {a1:FLOAT,a2:[20,40],bd:'arm',e:'snap',cue:'Snap the hips. Shoulders stay square.'},
+    {...HINGE,a1:HIKE,a2:[-30,-20],bd:'arm',e:'drop',cue:'Hike it back. The free arm swings along.'}]},
+  row:{ms:900,f:[
+    {t:120,l1:[35,-8],a1:[0,0],a2:[45,20],cue:'Flat back, arm long.'},
+    {t:120,l1:[35,-8],a1:[-100,-10],a2:[45,20],cue:'Pull the elbow to the hip and pause.'}]},
+  clean:{ms:700,f:[
+    {a1:RACK,bd:60,a2:[5,5],e:'snap',cue:'Zip it up close to the body. Land softly in the rack.'},
+    {...HINGE,a1:HIKE,a2:[-30,-20],bd:'arm',e:'drop',cue:'Hike it back like a swing.'}]},
+  press:{ms:1000,f:[
+    {a1:RACK,bd:60,a2:[5,5],cue:'Squeeze the glutes. Forearm vertical.'},
+    {a1:OVER,a2:[8,8],bd:-50,cue:'Lock out with the biceps by the ear.'}]},
+  cleanpress:{ms:760,f:[
+    {...HINGE,a1:HIKE,a2:[-30,-20],bd:'arm',e:'drop',cue:'Hike it back.'},
+    {a1:RACK,bd:60,a2:[5,5],e:'snap',cue:'Clean it to the rack.'},
+    {a1:OVER,a2:[8,8],bd:-50,ms:950,cue:'Press to lockout.'},
+    {a1:RACK,bd:60,a2:[5,5],ms:950,cue:'Lower it back to the rack.'}]},
+  racksquat:{ms:1100,f:[
+    {a1:RACK,bd:60,a2:[5,5],cue:'Stand tall, elbow tucked.'},
+    {t:165,l1:[95,-30],a1:RACK,bd:60,a2:[40,60],cue:'Sit down between the hips. Chest up.'}]},
+  racklunge:{ms:1100,f:[
+    {a1:RACK,bd:60,a2:[5,5],l2:[0,0],cue:'Stand tall.'},
+    {a1:RACK,bd:60,a2:[5,5],l1:[85,-5],l2:[-20,-100,0],cue:'Step back. The back knee kisses the floor.'}]},
   tgu:{ms:1000,pp:1,f:[
-    {hip:[86,90],t:-90,a1:OVER,a2:[80,90],l1:[150,30],l2:[90,90]},
-    {hip:[86,90],t:-125,a1:OVER,a2:[10,90],l1:[150,30],l2:[90,90]},
-    {hip:[86,90],t:-150,a1:OVER,a2:[-20,-20],l1:[150,30],l2:[90,90]},
-    {hip:[86,72],t:-115,a1:OVER,a2:[-15,-15],l1:[100,-5],l2:[70,60]},
-    {hip:[76,72],t:-180,a1:OVER,a2:[0,0],l1:[90,0],l2:[0,-90]},
-    {hip:[76,49],t:-180,a1:OVER,a2:[0,0],l1:[0,0],l2:[0,0]}]},
-  windmill:{ms:1300,f:[{a1:OVER,a2:[0,0],l1:[0,0]},{t:105,a1:OVER,a2:[0,0],l1:[15,-5]}]},
-  highpull:{ms:700,f:[{...HINGE,a1:HIKE,a2:[-10,-10]},{a1:[-140,95],a2:[5,5]}]},
-  snatch:{ms:650,f:[{...HINGE,a1:HIKE,a2:[-10,-10]},{a1:[90,120],a2:[5,5]},{a1:OVER,a2:[8,8]},{a1:[90,120],a2:[5,5]}]}
+    {hip:[86,89],t:-90,a1:[180,180],a2:[80,90],l1:[145,20],l2:[90,90,180],cue:'Arm locked, eyes on the bell.'},
+    {hip:[86,89],t:-125,a1:[180,180],a2:[0,90],l1:[145,20],l2:[90,90,180],cue:'Roll up to the elbow.'},
+    {hip:[86,89],t:-150,a1:[180,180],a2:[-21,-21],l1:[145,20],l2:[90,90,180],cue:'Up to the hand.'},
+    {hip:[86,76],t:-115,a1:[180,180],a2:[-8,-8],l1:[105,0],l2:[60,75],cue:'Lift the hips high.'},
+    {hip:[76,70],t:-180,a1:[180,180],a2:[0,0],l1:[90,0],l2:[0,-90,-90],cue:'Sweep the leg through to a half kneel.'},
+    {hip:[76,46],t:-180,a1:[180,180],a2:[0,0],l1:[0,0],l2:[0,0],cue:'Stand up. Then reverse every step back down.'}]},
+  windmill:{ms:1400,f:[
+    {a1:OVER,a2:[0,0],bd:-50,cue:'Arm locked, eyes on the bell.'},
+    {t:105,l1:[10,10],a1:[180,180],a2:[0,0],cue:'Hips back. Slide the free hand down the leg.'}]},
+  highpull:{ms:680,f:[
+    {...HINGE,a1:HIKE,a2:[-30,-20],bd:'arm',e:'drop',cue:'Hike it back.'},
+    {a1:[-140,95],a2:[5,5],bd:'arm',e:'snap',cue:'Snap the hips, then pull the elbow high and back.'}]},
+  snatch:{ms:560,f:[
+    {...HINGE,a1:HIKE,a2:[-30,-20],bd:'arm',e:'drop',cue:'Hike it back.'},
+    {a1:[100,150],a2:[5,5],bd:'arm',e:'snap',cue:'Snap the hips. Keep the bell close.'},
+    {a1:OVER,a2:[8,8],bd:-50,ms:800,cue:'Punch through to lockout.'},
+    {a1:[100,150],a2:[5,5],bd:'arm',ms:700,cue:'Let it drop close, back into the hike.'}]}
 };
 function kbDir(a){a*=Math.PI/180;return[Math.sin(a),Math.cos(a)]}
 function kbAdd(p,a,len){const d=kbDir(a);return[p[0]+d[0]*len,p[1]+d[1]*len]}
 function kbResolve(f){
   const p={...KS,...f};p.a2=p.a2||p.a1;p.l2=p.l2||p.l1;
-  if(!p.hip){
-    const knee=kbAdd([p.fx,KBG],p.l1[1],-SEG.sh);p.hip=kbAdd(knee,p.l1[0],-SEG.th);
-  }
+  p.l1=[p.l1[0],p.l1[1],p.l1[2]==null?90:p.l1[2]];p.l2=[p.l2[0],p.l2[1],p.l2[2]==null?90:p.l2[2]];
+  if(!p.hip){const knee=kbAdd([p.fx,KBY],p.l1[1],-SEG.sh);p.hip=kbAdd(knee,p.l1[0],-SEG.th)}
+  const d=p.bd==='arm'?kbDir(p.a1[1]):p.bd!=null?kbDir(p.bd):[0,1];
+  p.bv=[d[0]*KBR,d[1]*KBR];
   return p;
 }
 function kbLerp(a,b,u){
-  const L=(x,y)=>x+(y-x)*u,L2=(x,y)=>[L(x[0],y[0]),L(x[1],y[1])];
-  return{hip:L2(a.hip,b.hip),t:L(a.t,b.t),a1:L2(a.a1,b.a1),a2:L2(a.a2,b.a2),l1:L2(a.l1,b.l1),l2:L2(a.l2,b.l2),bell:u<.5?a.bell:b.bell};
+  const L=(x,y)=>x+(y-x)*u,V=(x,y)=>x.map((v,i)=>L(v,y[i]));
+  return{hip:V(a.hip,b.hip),t:L(a.t,b.t),a1:V(a.a1,b.a1),a2:V(a.a2,b.a2),l1:V(a.l1,b.l1),l2:V(a.l2,b.l2),bv:V(a.bv,b.bv),bell:a.bell&&b.bell};
 }
-function kbSvg(){
-  const s=el('svg',{viewBox:'10 -22 124 120',class:'kb-fig','aria-hidden':'true'});
-  const g={};
-  s.append(el('line',{x1:0,y1:KBG+1.5,x2:140,y2:KBG+1.5,class:'kb-ground'}));
-  ['farleg','fararm'].forEach(k=>{g[k]=el('polyline',{class:'kb-limb kb-far'});s.append(g[k])});
-  ['torso','nearleg'].forEach(k=>{g[k]=el('polyline',{class:'kb-limb'});s.append(g[k])});
-  g.head=el('circle',{r:6,class:'kb-head'});s.append(g.head);
-  g.bell=el('g',{class:'kb-bell'});g.bell.append(el('circle',{r:5.5,cx:0,cy:0}),el('circle',{r:3,cx:0,cy:-5.5,class:'kb-handle'}));s.append(g.bell);
-  g.neararm=el('polyline',{class:'kb-limb'});s.append(g.neararm);
+/* joint positions for a pose */
+function kbGeo(p){
+  const sh=kbAdd(p.hip,p.t,SEG.to),hd=kbAdd(sh,p.t,SEG.nk+SEG.hd),off=[-2.5,-1];
+  const arm=(a,o)=>{const s=[sh[0]+o[0],sh[1]+o[1]],e=kbAdd(s,a[0],SEG.ua);return[s,e,kbAdd(e,a[1],SEG.fa)]};
+  const leg=(l,o)=>{const h0=[p.hip[0]+o[0],p.hip[1]+o[1]],k=kbAdd(h0,l[0],SEG.th),a=kbAdd(k,l[1],SEG.sh);return[h0,k,a,kbAdd(a,l[2],SEG.ft)]};
+  const an=arm(p.a1,[0,0]);
+  return{hip:p.hip,sh,hd,an,af:arm(p.a2,off),ln:leg(p.l1,[0,0]),lf:leg(p.l2,off),bell:p.bell?[an[2][0]+p.bv[0],an[2][1]+p.bv[1]]:null};
+}
+/* the loop as timed moves between poses */
+function kbTimeline(A){
+  const F=A.f.map(kbResolve),seq=F.map((_,i)=>i);
+  if(A.pp)for(let i=F.length-2;i>0;i--)seq.push(i);
+  const segs=seq.map((from,i)=>{const to=seq[(i+1)%seq.length];return{a:F[from],b:F[to],ms:F[to].ms||A.ms,e:F[to].e}});
+  return{F,segs,total:segs.reduce((n,s)=>n+s.ms,0),hold:A.hold==null?.28:A.hold};
+}
+function kbAt(T,x){
+  x%=T.total;
+  for(const s of T.segs){
+    if(x<s.ms){
+      const u=x/s.ms,v=u<T.hold?0:(u-T.hold)/(1-T.hold);
+      const e=s.e==='snap'?1-Math.pow(1-v,3):s.e==='drop'?v*v:.5-.5*Math.cos(Math.PI*v);
+      return{p:kbLerp(s.a,s.b,e),cue:(v<.45?s.a:s.b).cue||''};
+    }
+    x-=s.ms;
+  }
+}
+/* frame that fits the whole movement, and the bell's path through it */
+function kbScene(T){
+  let x0=1e9,y0=1e9,x1=-1e9,y1=KBG+3;const path=[];
+  const grow=(pt,r)=>{x0=Math.min(x0,pt[0]-r);x1=Math.max(x1,pt[0]+r);y0=Math.min(y0,pt[1]-r);y1=Math.max(y1,pt[1]+r)};
+  for(let i=0;i<120;i++){
+    const g=kbGeo(kbAt(T,T.total*i/120).p);
+    [g.hip,g.sh,...g.an,...g.af,...g.ln,...g.lf].forEach(pt=>grow(pt,6));grow(g.hd,SEG.hd+2);
+    if(g.bell){grow(g.bell,8);path.push(g.bell)}
+  }
+  x0-=5;x1+=5;y0-=5;
+  let w=x1-x0,hh=y1-y0;
+  if(w<hh){x0-=(hh-w)/2;w=hh}                       // never taller than wide
+  if(w>hh*1.7){const nh=w/1.7;y0-=nh-hh;hh=nh}       // never a thin strip
+  const xs=path.map(p=>p[0]),ys=path.map(p=>p[1]);
+  const moves=path.length&&Math.hypot(Math.max(...xs)-Math.min(...xs),Math.max(...ys)-Math.min(...ys))>14;
+  return{vb:[x0,y0,w,hh].map(v=>+v.toFixed(1)),path:moves?path.concat([path[0]]):null};
+}
+function kbFig(S){
+  const s=el('svg',{viewBox:S.vb.join(' '),class:'kb-fig','aria-hidden':'true'}),g={};
+  const add=(k,tag,attrs)=>{g[k]=el(tag,attrs);s.append(g[k])};
+  const limb=(k,w,far,halo)=>{if(halo)add(k+'H','polyline',{class:'kb-s halo','stroke-width':w+2.6});add(k,'polyline',{class:'kb-s'+(far?' far':''),'stroke-width':w})};
+  if(S.path)s.append(el('polyline',{class:'kb-path',points:S.path.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}));
+  s.append(el('line',{x1:S.vb[0],y1:KBG+.6,x2:S.vb[0]+S.vb[2],y2:KBG+.6,class:'kb-ground'}));
+  limb('lfT',8.5,1);limb('lfS',6.5,1);limb('lfF',5,1);limb('afU',6,1);limb('afL',5,1);add('hf','circle',{r:3,class:'kb-hand far'});
+  limb('to',11);limb('nk',5);add('hd','circle',{r:SEG.hd,class:'kb-head'});
+  limb('lnT',8.5);limb('lnS',6.5);limb('lnF',5);
+  add('bell','g',{class:'kb-bell'});g.bell.append(el('path',{d:'M-3.4,-4.6 C-5,-10.6 5,-10.6 3.4,-4.6'}),el('circle',{r:6,cx:0,cy:0}));
+  limb('anU',6,0,1);limb('anL',5,0,1);add('hn','circle',{r:3,class:'kb-hand'});
   return[s,g];
 }
 function kbDraw(g,p){
-  const pt=a=>a.map(x=>x.toFixed(1)).join(','),pts=a=>a.map(pt).join(' ');
-  const sh=kbAdd(p.hip,p.t,SEG.to),head=kbAdd(p.hip,p.t,SEG.to+10);
-  const arm=a=>{const e=kbAdd(sh,a[0],SEG.ua);return[sh,e,kbAdd(e,a[1],SEG.fa)]};
-  const leg=l=>{const k=kbAdd(p.hip,l[0],SEG.th);return[p.hip,k,kbAdd(k,l[1],SEG.sh)]};
-  const n=arm(p.a1),f=arm(p.a2);
-  g.torso.setAttribute('points',pts([p.hip,sh]));
-  g.nearleg.setAttribute('points',pts(leg(p.l1)));g.farleg.setAttribute('points',pts(leg(p.l2)));
-  g.neararm.setAttribute('points',pts(n));g.fararm.setAttribute('points',pts(f));
-  g.head.setAttribute('cx',head[0].toFixed(1));g.head.setAttribute('cy',head[1].toFixed(1));
-  const hand=p.bell==='f'?f:n,b=kbAdd(hand[2],(p.bell==='f'?p.a2:p.a1)[1],5);
-  g.bell.style.display=p.bell?'':'none';
-  g.bell.setAttribute('transform','translate('+b[0].toFixed(1)+' '+b[1].toFixed(1)+')');
+  const G=kbGeo(p),f=v=>v.toFixed(1);
+  const set=(k,a,b)=>{const v=f(a[0])+','+f(a[1])+' '+f(b[0])+','+f(b[1]);g[k].setAttribute('points',v);if(g[k+'H'])g[k+'H'].setAttribute('points',v)};
+  const at=(k,pt)=>{g[k].setAttribute('cx',f(pt[0]));g[k].setAttribute('cy',f(pt[1]))};
+  set('to',G.hip,G.sh);set('nk',G.sh,G.hd);at('hd',G.hd);
+  set('lnT',G.ln[0],G.ln[1]);set('lnS',G.ln[1],G.ln[2]);set('lnF',G.ln[2],G.ln[3]);
+  set('lfT',G.lf[0],G.lf[1]);set('lfS',G.lf[1],G.lf[2]);set('lfF',G.lf[2],G.lf[3]);
+  set('anU',G.an[0],G.an[1]);set('anL',G.an[1],G.an[2]);at('hn',G.an[2]);
+  set('afU',G.af[0],G.af[1]);set('afL',G.af[1],G.af[2]);at('hf',G.af[2]);
+  g.bell.style.display=G.bell?'':'none';
+  if(G.bell){
+    const rot=Math.atan2(G.an[2][0]-G.bell[0],-(G.an[2][1]-G.bell[1]))*180/Math.PI;
+    g.bell.setAttribute('transform','translate('+f(G.bell[0])+' '+f(G.bell[1])+') rotate('+f(rot)+')');
+  }
 }
-/* animated figure; with reduced motion, the key poses side by side instead */
+/* animated figure with its cue line; with reduced motion, the key poses side by side instead */
 function kbAnim(id){
-  const A=KBA[id],F=A.f.map(kbResolve);
+  const T=kbTimeline(KBA[id]),S=kbScene(T);
   if(matchMedia('(prefers-reduced-motion: reduce)').matches){
     const row=h('div',{class:'kb-strip'});
-    F.forEach(p=>{const[s,g]=kbSvg();kbDraw(g,p);row.append(s)});
+    T.F.forEach(p=>{const[s,g]=kbFig({vb:S.vb});kbDraw(g,p);row.append(h('figure',{},s,h('figcaption',{},p.cue||'')))});
     return row;
   }
-  const[s,g]=kbSvg(),seq=F.map((_,i)=>i);
-  if(A.pp)for(let i=F.length-2;i>0;i--)seq.push(i);
-  let t0=null;
+  const[s,g]=kbFig(S),cues=[...new Set(T.F.map(p=>p.cue).filter(Boolean))];
+  const list=h('ol',{class:'kb-cues'},cues.map(c=>h('li',{},c)));
+  let t0=null,last=null;
   const tick=now=>{
     if(t0==null)t0=now;
     if(!s.isConnected&&now-t0>1000)return;   // removed from the page: stop
-    const x=(now-t0)/A.ms,i=Math.floor(x)%seq.length,u=x%1,hold=.25;
-    const v=u<hold?0:(u-hold)/(1-hold),e=.5-.5*Math.cos(Math.PI*v);
-    kbDraw(g,kbLerp(F[seq[i]],F[seq[(i+1)%seq.length]],e));
+    const fr=kbAt(T,now-t0);
+    kbDraw(g,fr.p);
+    if(fr.cue!==last){last=fr.cue;[...list.children].forEach((li,i)=>li.classList.toggle('on',cues[i]===last))}
     requestAnimationFrame(tick);
   };
-  kbDraw(g,F[0]);requestAnimationFrame(tick);
-  return s;
+  kbDraw(g,T.F[0]);requestAnimationFrame(tick);
+  return h('div',{class:'kb-demo'},s,list);
 }
 /* ---------- body drawing (right-hand half is mirrored to make the left) ---------- */
 const SIL={
@@ -1422,7 +1519,7 @@ function hasDemo(x){return!!(kbOf(x)||DEMO[x.name])}
 function demoBox(x){
   const kb=kbOf(x);
   if(kb)return h('div',{class:'demo'},kbAnim(kb.id),
-    h('p',{class:'demo-cap'},'Side view · the red ball is the bell'),
+    h('p',{class:'demo-cap'},'Side view · the dotted line is the bell’s path'),
     x.more?null:h('p',{class:'demo-miss'},'Common mistake: '+kb.miss));
   const v=DEMO[x.name],near=v[0]==='~',id=near?v.slice(1):v,base=DEMO_BASE+id+'/';
   const box=h('div',{class:'demo'},
