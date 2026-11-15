@@ -658,8 +658,10 @@ function exFor(id){return state.where==='home'?(HOME[id]||[]):M[id].ex}
 const ORDER=Object.keys(M);
 const PRESETS=[
   {id:'mon',day:'Mon',name:'Upper Power',goal:'strength',time:60,sel:['lats','midchest','upperback','upperchest','frontdelts','tricepslong']},
+  {id:'tue',day:'Tue',name:'Lower Hypertrophy',goal:'muscle',time:60,sel:['quadsouter','hamsinner','glutemax','quadsinner','hamsouter','gastroc','adductors']},
   {id:'thu',day:'Thu',name:'Upper Hypertrophy',goal:'muscle',time:60,sel:['lats','upperchest','sidedelts','reardelts','midtraps','bicepslong','tricepslong']},
-  {id:'fri',day:'Fri',name:'Lower Power',goal:'strength',time:60,sel:['glutemax','quadsouter','hamsinner','glutemed','abs','gastroc']}
+  {id:'fri',day:'Fri',name:'Lower Power',goal:'strength',time:60,sel:['glutemax','quadsouter','hamsinner','glutemed','abs','gastroc']},
+  {id:'sat',day:'Sat',name:'Arms & Core',goal:'muscle',time:45,sel:['bicepslong','tricepslong','brachialis','tricepslateral','forearms','abs','obliques']}
 ];
 const SPLITS=[
   {id:'push',name:'Push',sub:'Chest · shoulders · triceps',sel:['midchest','upperchest','frontdelts','sidedelts','tricepslong','tricepslateral']},
