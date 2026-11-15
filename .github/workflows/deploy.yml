@@ -50,5 +50,16 @@ jobs:
             --exclude "*" --include "*.html" --include "robots.txt" \
             --cache-control "public,max-age=300,must-revalidate"
 
+      # The bucket is private behind OAC, so there are no directory indexes:
+      # /workout and /workout/ need their own objects.
+      - name: Publish /workout
+        run: |
+          for key in workout workout/; do
+            aws s3api put-object --bucket "$BUCKET" --key "$key" \
+              --body site/workout/index.html \
+              --content-type "text/html; charset=utf-8" \
+              --cache-control "public,max-age=300,must-revalidate" > /dev/null
+          done
+
       - name: Invalidate CloudFront
         run: aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION_ID" --paths "/*"
