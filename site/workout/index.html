@@ -95,6 +95,11 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .chip.all{border-style:dashed}
 .chip{font:500 14px/1 var(--f-body);padding:9px 12px;min-height:38px;border:1px solid var(--line);border-radius:3px;background:transparent;color:var(--ink);cursor:pointer}
 .chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.chip[disabled]{opacity:.5;cursor:default}
+.kbp{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.kbp .hint{min-height:0}
+.more{margin:6px 0 0;font-size:13px;color:var(--ink-2)}
+.lift .btn{margin-top:10px}
 
 .sheet{border:1px solid var(--line);background:var(--surface);min-width:0}
 .sheet-h{padding:20px 20px 16px;border-bottom:1px solid var(--line)}
@@ -162,6 +167,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
       <div class="seg" role="group" aria-labelledby="whereLbl" id="whereSeg">
         <button type="button" data-where="gym">Gym</button>
         <button type="button" data-where="home">Home</button>
+        <button type="button" data-where="kb">Kettlebell</button>
       </div>
     </div>
   </div>
@@ -201,6 +207,11 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
         <p class="note" id="goalNote" hidden></p>
         <ol class="lifts" id="lifts"></ol>
         <p class="note" id="fin" hidden></p>
+        <div class="kbp" id="kbSkills" hidden>
+          <p class="lbl">Kettlebell skills</p>
+          <p class="hint">Tap a movement once you can do it with good form. New ones unlock as you go.</p>
+          <div class="chips" id="kbList"></div>
+        </div>
         <div class="export">
           <p class="lbl">Take it to Google Health</p>
           <div class="row">
@@ -654,6 +665,48 @@ const HOME={
 };
 const HOME_EQ='bodyweight, a push-up board, an ab roller, and household furniture (a sturdy table, a chair, a wall, a door frame, a towel)';
 const HARD_HOME=new Set(['lats','upperback','midtraps','lowertraps','reardelts','sidedelts','bicepslong','bicepsshort','brachialis','hamsinner','hamsouter']);
+/* ---------- kettlebell track: movements unlock once their prerequisites (pre) are marked as known ---------- */
+const KB=[
+ {id:'swing',name:'Two-hand swing',lvl:1,pre:[],mus:['glutemax','hamsouter','hamsinner','lowerback','forearms'],reps:'10–15',emom:'10 reps',
+  cues:'Hike the bell back like a football snap. Snap the hips and keep the arms loose. The bell floats to chest height.',miss:'squatting the swing or lifting the bell with the arms.'},
+ {id:'kbdl',name:'Kettlebell deadlift',lvl:1,pre:[],grind:1,mus:['hamsouter','hamsinner','glutemax','lowerback'],prac:[3,'8',60],
+  cues:'Bell between your ankles. Push the hips back with a flat back and shins near vertical. Stand tall by squeezing the glutes.',miss:'a rounded back, or turning it into a squat.'},
+ {id:'goblet',name:'Goblet squat',lvl:1,pre:[],grind:1,mus:['quadsouter','quadsinner','rectus','glutemax'],emom:'6 reps',prac:[3,'8',60],
+  cues:'Hold the bell by the horns at your chest. Sit between your hips with the elbows inside the knees. Keep the chest tall all the way down.',miss:'heels lifting or knees caving in.'},
+ {id:'floorpress',name:'Kettlebell floor press',lvl:1,pre:[],grind:1,side:' each arm',noflow:1,mus:['midchest','upperchest','lowerchest','tricepslong','tricepslateral'],prac:[3,'8 each arm',60],
+  cues:'Lie on your back with knees bent, the bell resting on the back of the forearm. Lower until the upper arm touches the floor. Press straight up with a straight wrist.',miss:'the wrist bending back under the bell.'},
+ {id:'carry',name:'Suitcase carry',lvl:1,pre:[],noflow:1,mus:['obliques','forearms','uppertraps'],reps:'30–40 m each side',prac:[3,'20 m each side',60],
+  cues:'Bell in one hand like a suitcase. Walk tall with level shoulders. Do not lean away from the bell.',miss:'leaning to the side or shrugging the loaded shoulder.'},
+ {id:'halo',name:'Halo',lvl:1,pre:[],mus:['frontdelts','sidedelts','rotatorcuff','upperback'],reps:'8–10 each direction',prac:[2,'8 each direction',45],
+  cues:'Hold the bell upside down by the horns. Circle it close around your head. Ribs down, only the arms move.',miss:'leaning back, or moving the head instead of the bell.'},
+ {id:'oneswing',name:'One-arm swing',lvl:2,pre:['swing'],side:' each arm',mus:['glutemax','hamsouter','hamsinner','forearms','obliques'],reps:'8–10 each arm',emom:'5 each arm',
+  cues:'Same hinge as the two-hand swing. Keep the shoulders square and do not let the bell twist you. The free arm swings alongside for balance.',miss:'the working shoulder being pulled forward at the bottom.'},
+ {id:'row',name:'Single-arm row',lvl:2,pre:['kbdl'],grind:1,side:' each arm',mus:['lats','upperback','midtraps','reardelts','bicepslong'],prac:[3,'8 each arm',60],
+  cues:'Hinge with a flat back, free hand on a bench or your knee. Pull the elbow toward your hip. Pause at the top and lower slowly.',miss:'twisting the torso to heave the bell up.'},
+ {id:'clean',name:'Clean',lvl:2,pre:['oneswing'],coach:1,side:' each arm',mus:['glutemax','hamsouter','bicepslong','brachialis','forearms'],reps:'5–8 each arm',emom:'4 each arm',
+  cues:'Start like a one-arm swing but keep the elbow close to your ribs. Zip the bell up your body like a jacket zipper. Let your hand slide around the bell so it lands softly in the rack.',miss:'the bell flipping over and banging the forearm. Keep it closer to the body.'},
+ {id:'press',name:'Overhead press',lvl:2,pre:['clean'],grind:1,side:' each arm',mus:['frontdelts','sidedelts','tricepslong','tricepslateral'],
+  cues:'Start from the rack: bell on the forearm, wrist straight, elbow under the bell. Squeeze glutes and abs and press straight up. Finish with the biceps by the ear.',miss:'leaning back to get the bell up.'},
+ {id:'cleanpress',name:'Clean and press',lvl:3,pre:['clean','press'],side:' each arm',mus:['frontdelts','sidedelts','tricepslong','glutemax','forearms'],reps:'5 each arm',emom:'3 each arm',prac:[4,'3 each arm',75],
+  cues:'One clean, pause in the rack, one press. Re-clean before every press. Stay tight between the two.',miss:'rushing the press before the bell has settled in the rack.'},
+ {id:'racksquat',name:'Front rack squat',lvl:3,pre:['clean','goblet'],grind:1,side:' each side',mus:['quadsouter','quadsinner','rectus','glutemax','abs'],
+  cues:'Clean the bell to the rack with the elbow tucked. Squat without letting the bell pull you sideways. Drive up and stay tall.',miss:'the elbow drifting out so the bell pulls you forward.'},
+ {id:'racklunge',name:'Front rack reverse lunge',lvl:3,pre:['clean','goblet'],grind:1,side:' each leg',mus:['glutemax','glutemed','quadsouter','hamsinner'],
+  cues:'Bell in the rack. Step back until the back knee kisses the floor. Push through the front heel to stand.',miss:'the front knee collapsing inward.'},
+ {id:'tgu',name:'Turkish get-up',lvl:3,pre:['press'],coach:1,noflow:1,side:' each side',mus:['frontdelts','rotatorcuff','abs','obliques','glutemed'],reps:'1–3 each side',prac:[3,'1 each side',75],
+  cues:'Learn it in halves: first only floor to elbow to hand to hip bridge, and back down. Eyes on the bell the whole time, arm locked straight. Move slowly, one position at a time.',miss:'a bent elbow or rushing between positions. Practise with no weight, or a shoe balanced on the fist, first.'},
+ {id:'windmill',name:'Windmill',lvl:3,pre:['press'],noflow:1,side:' each side',mus:['obliques','rotatorcuff','hamsinner','sidedelts'],reps:'5 each side',prac:[3,'3 each side',60],
+  cues:'Bell locked out overhead, feet turned about 45° away from it. Push the hip out toward the bell side and fold down. Eyes stay on the bell.',miss:'bending the spine sideways instead of hinging at the hip.'},
+ {id:'highpull',name:'High pull',lvl:4,pre:['oneswing'],side:' each arm',mus:['uppertraps','reardelts','midtraps','glutemax'],reps:'6–8 each arm',emom:'5 each arm',
+  cues:'Start as a one-arm swing. As the bell floats, pull the elbow high and back. Punch it back out and let it fall into the next hinge.',miss:'pulling with the arm before the hips have finished.'},
+ {id:'snatch',name:'Snatch',lvl:4,pre:['highpull','press'],coach:1,side:' each arm',mus:['glutemax','hamsouter','frontdelts','uppertraps','forearms'],reps:'5–8 each arm',emom:'5 each arm',prac:[5,'3 each arm',75],
+  cues:'A high pull that continues overhead. Punch the hand through the handle at the top so the bell lands softly. Lock out, pause, then drop it back into the hinge.',miss:'the bell crashing onto the forearm. Punch through earlier.'}
+];
+const KB_NOTE='Kettlebell mode: one bell. New movements come first as practice while you are fresh. Tap "Got it" once a movement feels solid and it joins your regular work.';
+const SS_NOTE='Supersets: do the two lifts with the same letter back to back, then rest.';
+const WHERE={gym:'Gym',home:'Home',kb:'Kettlebell'};
+let kbSet=(()=>{try{const a=JSON.parse(localStorage.getItem('mm-kb'));if(Array.isArray(a))return new Set(a.filter(x=>KB.some(m=>m.id===x)))}catch(e){}return new Set(['swing'])})();
+function kbSave(){try{localStorage.setItem('mm-kb',JSON.stringify([...kbSet]))}catch(e){}}
 function exFor(id){return state.where==='home'?(HOME[id]||[]):M[id].ex}
 const ORDER=Object.keys(M);
 const PRESETS=[
@@ -683,7 +736,9 @@ const GOALS={
   endurance:{label:'Endurance',hc:'15–25',hi:'20–30',blurb:'light loads, high reps, short rests',c:{sets:3,reps:'15–20',rest:45},i:{sets:2,reps:'15–20',rest:30},fin:0,finisher:'',note:'Pick a weight you could lift about 25 times. Keep the pace steady.'},
   power:{label:'Power',compoundOnly:true,hc:'3–5 explosive',hi:'8–12',blurb:'explosive low-rep sets on compound lifts with full rest',c:{sets:5,reps:'2–4',rest:150},i:{sets:3,reps:'6–8',rest:90},fin:0,finisher:'',note:'Use about 60 to 70% of your max and move every rep as fast as you can with clean form. End the set when the bar slows down.'},
   deload:{label:'Deload',hc:'8–12 easy',hi:'10–15 easy',blurb:'a light recovery session, far from failure',c:{sets:2,reps:'8–10',rest:75},i:{sets:2,reps:'10–12',rest:60},fin:0,finisher:'',note:'Deload: use about 60% of your usual weight and stop every set with at least 4 reps left.'},
-  express:{label:'Express',superset:true,hc:'10–15',hi:'12–20',blurb:'two hard sets per lift, done as supersets',c:{sets:2,reps:'8–12',rest:45},i:{sets:2,reps:'12–15',rest:45},fin:0,finisher:'',note:'Only two sets each, so take the second one close to failure.'}
+  express:{label:'Express',superset:true,hc:'10–15',hi:'12–20',blurb:'two hard sets per lift, done as supersets',c:{sets:2,reps:'8–12',rest:45},i:{sets:2,reps:'12–15',rest:45},fin:0,finisher:'',note:'Only two sets each, so take the second one close to failure.'},
+  kbflow:{label:'Kettlebell flow',kb:'flow',spec:'chain 3–4 moves',blurb:'three or four kettlebell movements chained without putting the bell down',c:{sets:4,reps:'5',rest:90},i:{sets:4,reps:'5',rest:90},fin:0,finisher:''},
+  kbemom:{label:'EMOM',kb:'emom',spec:'a set every minute',blurb:'a set at the top of every minute for a fixed number of minutes',c:{sets:10,reps:'10',rest:0},i:{sets:10,reps:'10',rest:0},fin:0,finisher:''}
 };
 
 /* ---------- body drawing (right-hand half is mirrored to make the left) ---------- */
@@ -804,7 +859,7 @@ $('#figFront').append(buildFig('front'));
 $('#figBack').append(buildFig('back'));
 
 /* ---------- state ---------- */
-const state={sel:['upperchest'],goal:'recomp',time:45,seed:1,view:'front',ai:null,where:(()=>{try{return localStorage.getItem('mm-where')==='home'?'home':'gym'}catch(e){return 'gym'}})()};
+const state={sel:['upperchest'],goal:'recomp',time:45,seed:1,view:'front',ai:null,where:(()=>{try{const v=localStorage.getItem('mm-where');return v==='home'||v==='kb'?v:'gym'}catch(e){return 'gym'}})()};
 
 const ISO=new Set(['sidedelts','reardelts','bicepslong','bicepsshort','brachialis','tricepslong','tricepslateral','tricepsmedial','forearms','gastroc','soleus','tibialis','serratus','rotatorcuff','neck','glutemed','adductors']);
 const MAIN=new Set(['Barbell bench press','Machine chest press','Incline barbell press','Incline dumbbell press','Barbell overhead press','Seated dumbbell shoulder press','Machine shoulder press',
@@ -855,7 +910,9 @@ function activePreset(){
 function activeSplit(){
   return SPLITS.find(p=>p.sel.length===state.sel.length&&p.sel.every((x,i)=>state.sel[i]===x));
 }
+function hasPlan(){return state.sel.length>0||state.where==='kb'}
 function titleFor(){
+  if(!state.sel.length&&state.where==='kb')return 'Kettlebell session';
   const ap=activePreset();if(ap)return ap.name;
   const sp=activeSplit();if(sp)return sp.name;
   const p=labelParts();
@@ -863,7 +920,68 @@ function titleFor(){
   return p.join(' + ');
 }
 function est(sets,rest){return sets*(40+rest)/60}
+function tagPairs(items){
+  items.forEach((x,i)=>{
+    const L=String.fromCharCode(65+(i>>1)),solo=i%2===0&&i===items.length-1;
+    x.tag=solo?L:L+(i%2+1);
+    x.restTxt=i%2===0&&!solo?'no rest, go straight to '+L+'2':'rest '+x.rest+' s';
+  });
+}
+function buildKb(){
+  const G=GOALS[state.goal];
+  const fit=m=>m.mus.filter(x=>state.sel.includes(x)).length;
+  const r=rng(state.seed*997+11);
+  const order=l=>shuffle(l,r).sort((a,b)=>fit(b)-fit(a));
+  const learn=order(KB.filter(m=>!kbSet.has(m.id)&&m.pre.every(x=>kbSet.has(x)))).sort((a,b)=>a.lvl-b.lvl);
+  const all=order(KB.filter(m=>kbSet.has(m.id))),hit=all.filter(m=>fit(m)>0);
+  const known=hit.length>=3?hit:all;
+  const finOn=!G.kb&&G.fin&&state.time>=45&&kbSet.has('swing');
+  const out=[],work=[],notes=[];
+  let total=5+(finOn?5:0);
+  learn.slice(0,state.time>=45?2:1).forEach((m,i)=>{
+    const pr=m.prac||[5,'5'+(m.side||''),60];
+    out.push({name:m.name,muscle:'Practice · level '+m.lvl,equip:'Kettlebell',sets:pr[0],reps:pr[1],rest:pr[2],cue:m.cues,
+      more:'Watch for '+m.miss+(m.coach?' Worth watching a video or having a coach check this one.':''),kb:m.id,tag:'P'+(i+1)});
+    total+=est(pr[0],pr[2]);
+  });
+  if(out.length)notes.push('P = practice: use a light bell and stop while every rep still looks good.');
+  const flow=known.filter(m=>!m.noflow).slice(0,4),timed=known.filter(m=>m.emom);
+  if(G.kb==='flow'&&flow.length>=2){
+    const per=flow.length*0.6+1.5,rounds=Math.max(3,Math.min(8,Math.floor((state.time-total)/per)));
+    flow.forEach((m,i)=>work.push({name:m.name,muscle:'Flow',equip:'Kettlebell',sets:rounds,reps:'5'+(m.side||''),rest:90,rx:'5'+(m.side||' reps'),
+      restTxt:i<flow.length-1?'no rest, keep the bell in your hands':'rest 90 s, then start the next round',cue:m.cues,tag:'F'+(i+1)}));
+    total+=rounds*per;
+    notes.push('Flow: do F1 to F'+flow.length+' in a row without putting the bell down. That is one round. Do '+rounds+' rounds.');
+  }else if(G.kb==='emom'&&timed.length){
+    const avail=state.time-total,n=Math.min(timed.length,avail>=24?2:1),len=n===2?10:Math.max(6,Math.min(15,Math.floor(avail)));
+    timed.slice(0,n).forEach((m,i)=>{
+      work.push({name:m.name,muscle:'EMOM',equip:'Kettlebell',sets:len,reps:m.emom+' per minute',rest:0,rx:'EMOM '+len+' min · '+m.emom,
+        restTxt:'rest for what is left of each minute'+(i<n-1?', then take 2 minutes off':''),cue:m.cues,tag:'E'+(i+1)});
+      total+=len+(i<n-1?2:0);
+    });
+    notes.push('EMOM: start a set at the top of every minute and rest for the remainder.');
+  }else{
+    const B=G.kb?GOALS.recomp:G;
+    if(G.kb)notes.push('This format needs more movements you know, so this session is straight sets for now.');
+    for(const m of known){
+      if(out.length+work.length>=8)break;
+      const t=est(B.c.sets,B.superset?B.c.rest/2:B.c.rest);
+      if(work.length>=1&&total+t>state.time)continue;
+      work.push({name:m.name,muscle:m.mus.slice(0,2).map(x=>M[x].n).join(', '),equip:'Kettlebell',sets:B.c.sets,reps:m.grind?B.c.reps+(m.side||''):m.reps,rest:B.c.rest,cue:m.cues});
+      total+=t;
+    }
+    if(B.superset&&work.length>1){tagPairs(work);notes.push(SS_NOTE)}
+    else work.forEach((x,i)=>{x.tag=String(i+1)});
+    if(B.note)notes.push(B.note);
+  }
+  const miss=state.sel.filter(id=>!KB.some(m=>m.mus.includes(id))).map(id=>M[id].n.toLowerCase());
+  return{title:titleFor(),items:out.concat(work),mins:Math.round(total),note:notes.join(' '),
+    kbNote:KB_NOTE+(miss.length?' No kettlebell movement in this list trains '+miss.slice(0,4).join(', ')+' directly.':''),
+    warm:'3 minutes of easy movement, then 10 hip hinges and 5 halos each way with a light bell.',
+    finisher:finOn?'Finisher: 5 minutes of two-hand swings, 10 at the top of every minute.':'',source:'library'};
+}
 function buildPlan(){
+  if(state.where==='kb')return buildKb();
   const G=GOALS[state.goal];
   const home=state.where==='home';
   const qs=state.sel.map(id=>({id,q:queueFor(id)}));
@@ -895,14 +1013,7 @@ function buildPlan(){
   }
   out.sort((a,b)=>(a.type==='c'?0:1)-(b.type==='c'?0:1));
   let note=G.note||'';
-  if(G.superset&&out.length>1){
-    out.forEach((x,i)=>{
-      const L=String.fromCharCode(65+(i>>1)),solo=i%2===0&&i===out.length-1;
-      x.tag=solo?L:L+(i%2+1);
-      x.restTxt=i%2===0&&!solo?'no rest, go straight to '+L+'2':'rest '+x.rest+' s';
-    });
-    note=('Supersets: do the two lifts with the same letter back to back, then rest. '+note).trim();
-  }
+  if(G.superset&&out.length>1){tagPairs(out);note=(SS_NOTE+' '+note).trim()}
   return{title:titleFor(),items:out,mins:Math.round(total),note,
     warm:!out.length?'':home?'3 minutes of jumping jacks and arm circles, then 1 easy set of '+out[0].name.toLowerCase()+'.':'5 minutes of easy cardio, then 2 light sets of '+out[0].name.toLowerCase()+' before your working sets.',
     finisher:finisherOn||G.fin===0?(home&&G.hfin?G.hfin:G.finisher):'',source:'library'};
@@ -914,7 +1025,7 @@ function syncFigure(){
     const on=state.sel.includes(g.dataset.m);
     g.classList.toggle('on',on);g.setAttribute('aria-pressed',on?'true':'false');
   });
-  document.querySelectorAll('.chip').forEach(c=>{const g=c.dataset.g;const on=g?GROUPS[g].every(x=>state.sel.includes(x)):state.sel.includes(c.dataset.m);c.setAttribute('aria-pressed',on?'true':'false')});
+  document.querySelectorAll('#chips .chip').forEach(c=>{const g=c.dataset.g;const on=g?GROUPS[g].every(x=>state.sel.includes(x)):state.sel.includes(c.dataset.m);c.setAttribute('aria-pressed',on?'true':'false')});
   document.querySelectorAll('.preset').forEach(b=>{
     const p=PRESETS.find(x=>x.id===b.dataset.p);
     const on=p.goal===state.goal&&p.time===state.time&&p.sel.length===state.sel.length&&p.sel.every((x,i)=>state.sel[i]===x);
@@ -923,7 +1034,7 @@ function syncFigure(){
   const sp=activeSplit();
   document.querySelectorAll('#splits button').forEach(b=>b.setAttribute('aria-pressed',sp&&sp.id===b.dataset.s?'true':'false'));
   document.querySelectorAll('#whereSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.where===state.where?'true':'false'));
-  document.querySelectorAll('#goalSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.goal===state.goal?'true':'false'));
+  document.querySelectorAll('#goalSeg button').forEach(b=>{b.setAttribute('aria-pressed',b.dataset.goal===state.goal?'true':'false');b.hidden=!!GOALS[b.dataset.goal].kb&&state.where!=='kb'});
   document.querySelectorAll('#timeSeg button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.time===state.time?'true':'false'));
   document.querySelectorAll('#viewSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.view===state.view?'true':'false'));
   $('#figs').dataset.view=state.view;
@@ -933,12 +1044,12 @@ function defaultHint(){
 }
 let inView=false;
 function syncBar(){
-  const show=state.sel.length>0&&!inView;
+  const show=hasPlan()&&!inView;
   $('#bar').hidden=!show;
   $('#barTxt').textContent=titleFor();
 }
 function renderSheet(){
-  const has=state.sel.length>0;
+  const has=hasPlan();
   $('#empty').hidden=has;$('#filled').hidden=!has;
   const tags=$('#tags');tags.replaceChildren();
   state.sel.forEach(id=>tags.append(h('button',{type:'button',class:'tag','data-m':id,'aria-label':'Remove '+M[id].n},M[id].n+' ×')));
@@ -949,7 +1060,7 @@ function renderSheet(){
   }
   const plan=state.ai||buildPlan();
   const G=GOALS[state.goal];
-  $('#eyebrow').textContent=[state.where==='home'?'Home':'Gym',G.label,state.time+' min','about '+plan.mins+' min of work',plan.source==='claude'?'Written by Claude':''].filter(Boolean).join(' · ');
+  $('#eyebrow').textContent=[WHERE[state.where],G.label,state.time+' min','about '+plan.mins+' min of work',plan.source==='claude'?'Written by Claude':''].filter(Boolean).join(' · ');
   $('#sheetTitle').textContent=plan.title;
   $('#warm').textContent='Warm-up: '+plan.warm;
   const hn=$('#homeNote');
@@ -957,20 +1068,43 @@ function renderSheet(){
     let t='Home mode: bodyweight, your push-up board, the ab roller, and furniture. Only use a table or chair that cannot tip.';
     if(state.sel.some(id=>HARD_HOME.has(id)))t+=' Back, rear and side delts, biceps and hamstrings are hard to load at home. A resistance band or a doorway pull-up bar would cover them.';
     hn.textContent=t;hn.hidden=false;
-  }else hn.hidden=true;
+  }else if(state.where==='kb'){hn.textContent=plan.kbNote||KB_NOTE;hn.hidden=false}
+  else hn.hidden=true;
   $('#goalNote').hidden=!plan.note;$('#goalNote').textContent=plan.note||'';
   const ol=$('#lifts');ol.replaceChildren();
   plan.items.forEach((x,i)=>{
     ol.append(h('li',{class:'lift'},
       h('div',{class:'lift-n','aria-hidden':'true'},x.tag||i+1),
       h('div',{},
-        h('div',{class:'lift-top'},h('h3',{},x.name),h('span',{class:'rx'},x.sets+' × '+x.reps)),
+        h('div',{class:'lift-top'},h('h3',{},x.name),h('span',{class:'rx'},x.rx||x.sets+' × '+x.reps)),
         h('p',{class:'meta'},[x.muscle,x.equip,x.restTxt?x.restTxt[0].toUpperCase()+x.restTxt.slice(1):'Rest '+x.rest+' s'].filter(Boolean).join(' · ')),
-        x.cue?h('p',{class:'cue'},x.cue):null)));
+        x.cue?h('p',{class:'cue'},x.cue):null,
+        x.more?h('p',{class:'more'},x.more):null,
+        x.kb?h('button',{type:'button',class:'btn','data-kb':x.kb},'Got it, add to my workouts'):null)));
   });
   $('#fin').hidden=!plan.finisher;$('#fin').textContent=plan.finisher||'';
   $('#fallback').hidden=true;$('#exStatus').hidden=true;
+  renderKb();
   current=plan;
+}
+function renderKb(){
+  const box=$('#kbSkills');box.hidden=state.where!=='kb';if(box.hidden)return;
+  const list=$('#kbList');list.replaceChildren();
+  [1,2,3,4].forEach(l=>{
+    const row=h('div',{class:'sec-row'});
+    KB.filter(m=>m.lvl===l).forEach(m=>{
+      const on=kbSet.has(m.id),need=m.pre.filter(x=>!kbSet.has(x)).map(x=>KB.find(k=>k.id===x).name.toLowerCase());
+      const b=h('button',{type:'button',class:'chip','data-kb':m.id,'aria-pressed':on?'true':'false'},m.name+(on||!need.length?'':' · after '+need.join(' and ')));
+      if(!on&&need.length)b.disabled=true;
+      row.append(b);
+    });
+    list.append(h('div',{class:'sec'},h('p',{class:'lbl'},'Level '+l),row));
+  });
+}
+function kbToggle(e){
+  const b=e.target.closest('[data-kb]');if(!b)return;
+  if(kbSet.has(b.dataset.kb))kbSet.delete(b.dataset.kb);else kbSet.add(b.dataset.kb);
+  kbSave();state.ai=null;setAiStatus('');update();
 }
 let current=null;
 function reveal(){
@@ -989,6 +1123,8 @@ function toggle(id){
   state.ai=null;setAiStatus('');update();
 }
 const figs=$('#figs');
+$('#lifts').addEventListener('click',kbToggle);
+$('#kbList').addEventListener('click',kbToggle);
 figs.addEventListener('click',e=>{const g=e.target.closest('.m');if(g)toggle(g.dataset.m)});
 figs.addEventListener('keydown',e=>{
   if(e.key!=='Enter'&&e.key!==' ')return;
@@ -1017,7 +1153,7 @@ $('#splits').addEventListener('click',e=>{
   state.view=k>f?'back':'front';
   state.ai=null;setAiStatus('');update();
 });
-Object.entries(GOALS).forEach(([k,G])=>$('#goalSeg').append(h('button',{type:'button',class:'opt','data-goal':k,'aria-pressed':'false'},h('span',{class:'ot'},G.label),h('span',{class:'os'},G.c.sets+' × '+G.c.reps+' · '+G.c.rest+' s rest'))));
+Object.entries(GOALS).forEach(([k,G])=>$('#goalSeg').append(h('button',{type:'button',class:'opt','data-goal':k,'aria-pressed':'false'},h('span',{class:'ot'},G.label),h('span',{class:'os'},G.spec||G.c.sets+' × '+G.c.reps+' · '+G.c.rest+' s rest'))));
 const chips=$('#chips');
 SECTIONS.forEach(([t,items])=>{
   const row=h('div',{class:'sec-row'});
@@ -1041,6 +1177,7 @@ $('#timeSeg').addEventListener('click',e=>{const b=e.target.closest('button');if
 $('#whereSeg').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
   state.where=b.dataset.where;state.ai=null;setAiStatus('');
+  if(state.where!=='kb'&&GOALS[state.goal].kb)state.goal='recomp';
   try{localStorage.setItem('mm-where',state.where)}catch(err){}
   update();
 });
@@ -1057,9 +1194,9 @@ if('IntersectionObserver' in window){
 /* ---------- export for Google Health ---------- */
 function planText(p){
   const G=GOALS[state.goal];
-  const L=[p.title+' workout',(state.where==='home'?'Home':'Gym')+', '+G.label+', '+state.time+' min','','Warm-up: '+p.warm,''];
+  const L=[p.title+' workout',(WHERE[state.where])+', '+G.label+', '+state.time+' min','','Warm-up: '+p.warm,''];
   if(p.note)L.push(p.note,'');
-  p.items.forEach((x,i)=>{L.push((x.tag||i+1)+'. '+x.name+': '+x.sets+' x '+x.reps+', '+(x.restTxt||'rest '+x.rest+' s'));if(x.cue)L.push('   '+x.cue)});
+  p.items.forEach((x,i)=>{L.push((x.tag||i+1)+'. '+x.name+': '+(x.rx||x.sets+' x '+x.reps)+', '+(x.restTxt||'rest '+x.rest+' s'));if(x.cue)L.push('   '+x.cue);if(x.more)L.push('   '+x.more)});
   if(p.finisher)L.push('',p.finisher);
   return L.join('\n').replace(/–/g,'-');
 }
@@ -1094,9 +1231,9 @@ function str(v,n){return String(v==null?'':v).slice(0,n)}
 async function askAi(){
   const btn=$('#askAi');
   if(aiCtl){aiCtl.abort();return}
-  const names=state.sel.map(id=>M[id].n).join(', ');
+  const names=state.sel.map(id=>M[id].n).join(', ')||'full body';
   const G=GOALS[state.goal];
-  const prompt='You are a strength coach writing one '+(state.where==='home'?'home':'gym')+' session for an intermediate lifter. Equipment available: '+(state.where==='home'?HOME_EQ:'a full commercial gym (barbell, dumbbells, cable, machine, bodyweight)')+'.\n'
+  const prompt='You are a strength coach writing one '+WHERE[state.where].toLowerCase()+' session for an intermediate lifter. Equipment available: '+(state.where==='home'?HOME_EQ:state.where==='kb'?'a single kettlebell. Use only these movements, which the lifter already knows: '+KB.filter(m=>kbSet.has(m.id)).map(m=>m.name).join(', '):'a full commercial gym (barbell, dumbbells, cable, machine, bodyweight)')+'.\n'
    +'Muscles to train: '+names+'.\nGoal: '+G.label+' ('+G.blurb+').\nTime available: '+state.time+' minutes including warm-up.\n'
    +'Rules: 4 to 7 exercises, compound movements first, use only the equipment available. Cover every listed muscle. Each cue is one short sentence. Fit sets and rest into the time.\n'
    +'Reply with only JSON like {"warmup":"...","exercises":[{"name":"Lat pulldown","muscle":"Lats","equipment":"Cable","sets":4,"reps":"8-10","rest":90,"cue":"..."}],"finisher":"..."}. The finisher may be an empty string.';
